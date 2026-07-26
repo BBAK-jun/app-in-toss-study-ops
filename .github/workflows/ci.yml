@@ -38,6 +38,9 @@ jobs:
       - name: Build shared package
         run: pnpm build:shared
 
+      - name: Build client-sdk package
+        run: pnpm build:client-sdk
+
       - name: Typecheck all workspaces
         run: pnpm typecheck
 
