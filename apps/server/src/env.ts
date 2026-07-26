@@ -15,13 +15,21 @@ export interface SecretBindings {
   MCP_API_TOKEN: string; // Bearer token for /mcp endpoint (Sisyphus agent). See ADR-010.
 }
 
+// wrangler types가 ratelimits 바인딩을 optional(?)로 생성하지만,
+// 런타임에서는 wrangler.jsonc 설정이 있으면 항상 주입됨. AppEnv에서 필수로 강제.
+// See ADR-013.
+interface RequiredRuntimeBindings {
+  AUTH_RATE_LIMITER: RateLimit;
+  MCP_RATE_LIMITER: RateLimit;
+}
+
 // Hono app 전체 컨텍스트 타입. 모든 라우트/미들웨어에서 공유.
 // Variables.user 는 authMiddleware 통과 후 세팅됨.
 // Variables.requestId 는 requestIdMiddleware 가 세팅 (X-Request-Id 응답 헤더 + 로그 추적).
 export type AppEnv = {
   // `Env`는 wrangler types가 생성한 전역 인터페이스 (worker-configuration.d.ts).
   // 거기에 secrets를 합친다.
-  Bindings: Env & SecretBindings;
+  Bindings: Env & SecretBindings & RequiredRuntimeBindings;
   Variables: {
     user: { userKey: number };
     requestId: string;
