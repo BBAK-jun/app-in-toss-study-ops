@@ -1,0 +1,30 @@
+{
+  "name": "studyops-log-server",
+  "version": "0.0.0",
+  "private": true,
+  "description": "StudyOps Log Server — Hono on Cloudflare Workers + D1 (dedicated log ingestion)",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "dev:prod-preview": "wrangler dev --env production",
+    "build": "tsc --noEmit",
+    "deploy": "wrangler deploy",
+    "deploy:production": "wrangler deploy --env production",
+    "typecheck": "tsc --noEmit",
+    "types": "wrangler types",
+    "db:generate": "drizzle-kit generate",
+    "db:apply:dev": "wrangler d1 migrations apply studyops-logs-db-dev --local",
+    "db:apply:prod": "wrangler d1 migrations apply studyops-logs-db-prod --remote"
+  },
+  "dependencies": {
+    "@studyops/shared": "workspace:*",
+    "drizzle-orm": "^0.36.0",
+    "hono": "^4.6.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241205.0",
+    "drizzle-kit": "^0.28.0",
+    "typescript": "^5.6.0",
+    "wrangler": "^4.114.0"
+  }
+}

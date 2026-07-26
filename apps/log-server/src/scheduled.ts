@@ -1,15 +1,19 @@
 import { deleteOldLogs } from './lib/retention';
 import { LOG_EVENTS } from '@studyops/shared';
 import type { AppEnv } from './env';
+import type { RetentionResult } from './lib/retention';
 
 export async function runRetentionJob(env: AppEnv['Bindings']): Promise<void> {
   const startedAt = Date.now();
-  const results = await deleteOldLogs(env.DB);
-  const totalDeleted = results.reduce((sum, r) => sum + r.deletedCount, 0);
+  const results: RetentionResult[] = await deleteOldLogs(env.DB);
+  const totalDeleted = results.reduce(
+    (sum: number, r: RetentionResult) => sum + r.deletedCount,
+    0,
+  );
   const finishedAt = Date.now();
 
   const levelBreakdown = results
-    .map((r) => `${r.level}=${r.deletedCount}`)
+    .map((r: RetentionResult) => `${r.level}=${r.deletedCount}`)
     .join(' ');
 
   console.log(

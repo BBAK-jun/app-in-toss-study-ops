@@ -12,9 +12,7 @@ export function encodeCursor(ts: number, id: number): string {
   return `${ts}:${id}`;
 }
 
-export function parseCursor(
-  raw: string | undefined,
-): { ts: number; id: number } | null {
+export function parseCursor(raw: string | undefined): { ts: number; id: number } | null {
   if (!raw) return null;
   const parts = raw.split(':');
   if (parts.length !== 2) return null;
@@ -24,47 +22,18 @@ export function parseCursor(
   return { ts, id };
 }
 
-interface BuiltQuery {
-  sql: string;
-  params: (string | number)[];
-}
-
-export function buildLogsQuery(query: LogQuery): BuiltQuery {
+export function buildLogsQuery(query: LogQuery): { sql: string; params: (string | number)[] } {
   const conditions: string[] = [];
   const params: (string | number)[] = [];
 
-  if (query.level) {
-    conditions.push('level = ?');
-    params.push(query.level);
-  }
-  if (query.source) {
-    conditions.push('source = ?');
-    params.push(query.source);
-  }
-  if (query.event) {
-    conditions.push('event = ?');
-    params.push(query.event);
-  }
-  if (query.userId !== undefined) {
-    conditions.push('user_id = ?');
-    params.push(query.userId);
-  }
-  if (query.requestId) {
-    conditions.push('request_id = ?');
-    params.push(query.requestId);
-  }
-  if (query.sessionId) {
-    conditions.push('session_id = ?');
-    params.push(query.sessionId);
-  }
-  if (query.search) {
-    conditions.push('message LIKE ?');
-    params.push(`%${query.search}%`);
-  }
-  if (query.since !== undefined) {
-    conditions.push('ts >= ?');
-    params.push(query.since);
-  }
+  if (query.level) { conditions.push('level = ?'); params.push(query.level); }
+  if (query.source) { conditions.push('source = ?'); params.push(query.source); }
+  if (query.event) { conditions.push('event = ?'); params.push(query.event); }
+  if (query.userId !== undefined) { conditions.push('user_id = ?'); params.push(query.userId); }
+  if (query.requestId) { conditions.push('request_id = ?'); params.push(query.requestId); }
+  if (query.sessionId) { conditions.push('session_id = ?'); params.push(query.sessionId); }
+  if (query.search) { conditions.push('message LIKE ?'); params.push(`%${query.search}%`); }
+  if (query.since !== undefined) { conditions.push('ts >= ?'); params.push(query.since); }
 
   const cursor = parseCursor(query.cursor);
   if (cursor) {
@@ -75,14 +44,10 @@ export function buildLogsQuery(query: LogQuery): BuiltQuery {
     params.push(query.until);
   }
 
-  const whereClause =
-    conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
   const limit = clampLimit(query.limit);
 
   const sql = `SELECT id, ts, level, source, event, message, user_id, session_id, request_id, method, path, status, duration_ms, context, stack, env, version, user_agent, ip_hash FROM logs ${whereClause} ORDER BY ts DESC, id DESC LIMIT ?`;
 
-  return {
-    sql,
-    params: [...params, limit],
-  };
+  return { sql, params: [...params, limit] };
 }
