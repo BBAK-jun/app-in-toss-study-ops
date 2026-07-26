@@ -12,12 +12,20 @@ export default defineConfig({
   },
   permissions: [], // MVP: 추가 권한 최소화
   web: {
-    host: 'localhost',
-    port: 5173,
+    host: '0.0.0.0',
+    port: 3000,
     commands: {
       dev: 'npm run dev',
       build: 'npm run build',
     },
+  },
+  webViewProps: {
+    // iOS Safe Area & 레이아웃 처리: 시뮬레이터에서 레이아웃 겹침 방지
+    bounces: true,
+    pullToRefreshEnabled: false,
+    allowsInlineMediaPlayback: true,
+    allowsBackForwardNavigationGestures: true,
+    mediaPlaybackRequiresUserAction: false,
   },
   outdir: 'dist',
 });

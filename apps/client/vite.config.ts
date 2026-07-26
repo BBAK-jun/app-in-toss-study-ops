@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
+import { buildInfoPlugin } from './vite-plugins/build-info';
 
 // SPA 라우트(/studies/:id, /rounds/:id) 문서 요청이 API 프록시로 빨려들어
 // 401이 뜨는 버그 수정: 브라우저 네비게이션(Accept: text/html)은 index.html을
@@ -16,7 +17,7 @@ function spaBypass(req) {
 // VITE_API_BASE_URL이 비어 있으면(같은 출처) 프록시가 동작하고,
 // 명시된 경우(예: http://localhost:8787)에는 직접 호출한다.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), buildInfoPlugin()],
   resolve: {
     alias: {
       '@studyops/shared': fileURLToPath(new URL('../../packages/shared/src/index.ts', import.meta.url)),

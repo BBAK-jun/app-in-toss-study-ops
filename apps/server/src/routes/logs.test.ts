@@ -4,7 +4,7 @@ import { logRoutes } from './logs';
 import { errorHandler } from '../middleware/error';
 import type { AppEnv } from '../env';
 
-interface MockDb extends D1Database {
+interface MockDb {
   batch: ReturnType<typeof vi.fn>;
   prepare: ReturnType<typeof vi.fn>;
 }

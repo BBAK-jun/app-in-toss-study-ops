@@ -7,8 +7,16 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:ait": "ait build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "deploy:dev": "VITE_APP_ENV=development VITE_API_BASE_URL=https://studyops-server.mountain-race.workers.dev ait build && ait deploy --profile dev",
+    "deploy:prod": "VITE_APP_ENV=live VITE_API_BASE_URL=https://studyops-server-production.mountain-race.workers.dev ait build && ait deploy --profile prod",
+    "keys:set:dev": "bash scripts/ait-keys.sh set dev",
+    "keys:set:prod": "bash scripts/ait-keys.sh set prod",
+    "keys:sync": "bash scripts/ait-keys.sh sync",
+    "keys:list": "bash scripts/ait-keys.sh list",
+    "keys:remove": "bash scripts/ait-keys.sh remove"
   },
   "dependencies": {
     "@apps-in-toss/web-framework": "^2.10.5",

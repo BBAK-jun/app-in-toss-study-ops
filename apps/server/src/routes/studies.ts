@@ -1,11 +1,11 @@
 // 스터디 라우트 — /studies/* (protectedApi 에 /studies 로 마운트).
 // POST/GET/LIST/PATCH /studies, /studies/:id/participants, /studies/:id/rounds
 import { Hono } from 'hono';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import type { AppEnv } from '../env';
 import { HttpError } from '../lib/http-error';
 import { createDb } from '../db/client';
-import { studies, rounds, participants } from '../db/schema';
+import { studies, rounds, participants, submissions } from '../db/schema';
 import type {
   StudyDto,
   StudyCreateInput,
@@ -222,4 +222,35 @@ studyRoutes.get('/:id/rounds', async (c) => {
     .where(eq(rounds.studyId, c.req.param('id')))
     .all();
   return c.json(rows.map(toRoundDto), 200);
+});
+
+// ─── GET /studies/:id/rounds/status — 회차별 제출률 배치 조회 ──────────────
+studyRoutes.get('/:id/rounds/status', async (c) => {
+  const { userKey } = c.get('user');
+  const db = createDb(c.env.DB);
+  await getOwnedStudy(db, c.req.param('id'), userKey);
+
+  const allRounds = await db.select().from(rounds).where(eq(rounds.studyId, c.req.param('id'))).all();
+  const totalParticipants = await db.select().from(participants).where(eq(participants.studyId, c.req.param('id'))).all();
+  const total = totalParticipants.length;
+
+  const roundIds = allRounds.map((r) => r.id);
+  const allSubs = roundIds.length > 0
+    ? await db.select().from(submissions).where(inArray(submissions.roundId, roundIds)).all()
+    : [];
+
+  const countByRound = new Map<string, number>();
+  for (const s of allSubs) {
+    countByRound.set(s.roundId, (countByRound.get(s.roundId) ?? 0) + 1);
+  }
+
+  return c.json(allRounds.map((r) => ({
+    roundId: r.id,
+    roundNumber: r.roundNumber,
+    title: r.title,
+    dueAt: r.dueAt,
+    submittedCount: countByRound.get(r.id) ?? 0,
+    total,
+    rate: total > 0 ? (countByRound.get(r.id) ?? 0) / total : 0,
+  })), 200);
 });

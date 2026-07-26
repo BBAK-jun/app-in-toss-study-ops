@@ -48,18 +48,21 @@ app-intoss-study-workspace/
 │   ├── server/                     # Hono on Cloudflare Workers
 │   │   ├── package.json            # hono, drizzle-orm, @cloudflare/workers-types
 │   │   ├── tsconfig.json           # extends 루트, workers lib
-│   │   ├── wrangler.toml           # D1 binding, vars
+│   │   ├── wrangler.jsonc          # D1 binding, vars, env.production (ADR-006)
 │   │   ├── .dev.vars.example       # TOSS_AUTH_MODE, SESSION_SECRET 등
 │   │   ├── drizzle.config.ts       # D1 dialect, schema path, migrations out
+│   │   ├── boot-check.ts           # 부트 타임 fail-fast 검증 (ADR-006)
 │   │   ├── src/
-│   │   │   ├── index.ts            # Hono app 엔트리, 라우트 마운트, 미들웨어
-│   │   │   ├── env.ts              # Bindings 타입 (D1, 환경변수)
+│   │   │   ├── index.ts            # Hono app 엔트리, 미들웨어 체인 + /mcp 분기 (ADR-010)
+│   │   │   ├── env.ts              # AppEnv = { Bindings: Env & SecretBindings, Variables: { user, requestId } }
 │   │   │   ├── middleware/
 │   │   │   │   ├── auth.ts         # Bearer 세션 토큰 검증 → c.set('user', ...)
-│   │   │   │   └── error.ts        # 에러 응답 포맷 통일
+│   │   │   │   ├── error.ts        # formatHttpError 위임 (lib/http-error.ts)
+│   │   │   │   ├── request-id.ts   # cf-ray || randomUUID → X-Request-Id 헤더
+│   │   │   │   └── cors.ts         # ENVIRONMENT 기반 origin 화이트리스트 (ADR-011)
 │   │   │   ├── lib/
 │   │   │   │   ├── session.ts      # JWT(HS256) 발급/검증 (Web Crypto API)
-│   │   │   │   └── http.ts         # JSON fetch 래퍼 (Toss API 호출용)
+│   │   │   │   └── http-error.ts   # HttpError 클래스 + formatHttpError 헬퍼
 │   │   │   ├── auth/
 │   │   │   │   ├── toss.ts         # Toss generate-token, refresh, login-me, remove
 │   │   │   │   └── routes.ts       # /auth/login, /auth/me, /auth/logout
@@ -204,7 +207,7 @@ npx wrangler d1 migrations apply studyops-db --remote   # 프로덕션 D1 적용
 
 **베이스:** Cloudflare Worker 배포 후 `https://<worker>.workers.dev` (또는 커스텀 도메인). 클라이언트는 `VITE_API_BASE_URL`로 참조.
 
-**인증:** `Authorization: Bearer <sessionToken>` 헤더. `/auth/login`, `/health` 제외 모든 엔드포인트에 미들웨어 적용.
+**인증:** `Authorization: Bearer <sessionToken>` 헤더. `/auth/login`, `/health`, `/ready` 제외 모든 엔드포인트에 미들웨어 적용. `/mcp`는 별도 Bearer token(`MCP_API_TOKEN`) 검증 (ADR-010).
 
 **에러 응답 포맷 (통일):**
 ```typescript
@@ -231,28 +234,43 @@ import { roundRoutes } from './routes/rounds';
 import { healthRoutes } from './routes/health';
 import { authMiddleware } from './middleware/auth';
 import { errorHandler } from './middleware/error';
-import type { Bindings } from './env';
+import { requestIdMiddleware } from './middleware/request-id';
+import { corsMiddleware } from './middleware/cors';
+import type { AppEnv } from './env';
 
-const app = new Hono<{ Bindings: Bindings }>();
+const app = new Hono<AppEnv>();
+
+// 미들웨어 파이프라인 (순서 중요):
+//   requestId → cors → errorHandler → routes
 app.use('*', logger());
-app.use('*', errorHandler());
+app.use('*', requestIdMiddleware);   // X-Request-Id 헤더 (cf-ray || randomUUID)
+app.use('*', corsMiddleware);         // ENVIRONMENT 기반 origin 화이트리스트 (ADR-011)
+app.onError(errorHandler);            // formatHttpError 위임
 
-app.route('/health', healthRoutes);
+app.route('/', healthRoutes);         // /health, /ready
 app.route('/auth', authRoutes);
 
 // 인증 필요 라우트 그룹
-const protectedApi = new Hono<{ Bindings: Bindings }>();
+const protectedApi = new Hono<AppEnv>();
 protectedApi.use('*', authMiddleware);
 protectedApi.route('/studies', studyRoutes);
-protectedApi.route('/rounds', roundRoutes);   // /rounds/:id/* 직접 라우트
-protectedApi.route('/', studyRoutes);          // /studies/:id/rounds 등 서브도 studyRoutes에서 처리
+protectedApi.route('/rounds', roundRoutes);
 
 app.route('/', protectedApi);
 
-export default app;
+// /mcp 분기 — Hono 체인 밖. MCP_API_TOKEN 검증 후 StudyOpsMcpAgent DO로 라우팅 (ADR-010).
+export default {
+  fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    if (url.pathname.startsWith('/mcp')) {
+      // ... Bearer token 검증 후 McpAgent.fetch() 위임
+    }
+    return app.fetch(request, env, ctx);
+  },
+};
 ```
 
-> 참고: `/rounds/:id/...` 라우트는 `roundRoutes`에, `/studies/:id/rounds` 라우트는 `studyRoutes`에 각각 마운트. 둘 다 `protectedApi` 아래.
+> 미들웨어 상세는 [ADR-011](wiki/src/content/decisions/adr-011-cors-origin-policy.md) 참조. `formatHttpError`는 `errorHandler`(Hono onError)와 `/mcp` 401 직접 응답이 공유 → 두 경로의 JSON 포맷/로그 일관.
 
 ### 엔드포인트 전체 목록
 
@@ -446,12 +464,12 @@ interface ShareDiscordResponse { ok: true; discordResponse?: unknown; }
 ### dev 모드 폴백 상세 (`apps/server/src/auth/toss.ts`)
 
 ```typescript
-import type { Bindings } from '../env';
+import type { AppEnv } from '../env';
 
 export interface TossUserInfo { userKey: number; name?: string; }
 
 export async function resolveTossUser(
-  env: Bindings,
+  env: AppEnv['Bindings'],
   authorizationCode: string,
   referrer: 'DEFAULT' | 'SANDBOX',
 ): Promise<TossUserInfo> {
@@ -752,33 +770,68 @@ DISCORD_WEBHOOK_DEFAULT=
 # TOSS_MTLS_KEY=...
 ```
 
-### 서버 `apps/server/wrangler.toml`
-```toml
-name = "studyops-server"
-main = "src/index.ts"
-compatibility_date = "2024-11-01"
-compatibility_flags = ["nodejs_compat"]
+### 서버 `apps/server/wrangler.jsonc` (env.production 블록 포함, ADR-006)
+```jsonc
+{
+  "name": "studyops-server",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
 
-[[d1_databases]]
-binding = "DB"
-database_name = "studyops-db"
-database_id = "YOUR_D1_DATABASE_ID"   # wrangler d1 create 후 채우기
+  // 기본 환경 = dev
+  "vars": {
+    "ENVIRONMENT": "dev",
+    "TOSS_AUTH_MODE": "dev",
+    "TOSS_API_BASE_URL": "https://apps-in-toss-api.toss.im"
+  },
 
-[vars]
-TOSS_AUTH_MODE = "dev"
-TOSS_API_BASE_URL = "https://apps-in-toss-api.toss.im"
-# SESSION_SECRET, DISCORD_WEBHOOK_DEFAULT는 wrangler secret put으로 등록 (.dev.vars는 로컬 only)
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "studyops-db-dev",
+    "database_id": "YOUR_DEV_D1_ID",
+    "migrations_dir": "src/db/migrations"
+  }],
+
+  // prod는 별도 Worker 이름 + 별도 D1 인스턴스 (ADR-007)
+  "env": {
+    "production": {
+      "name": "studyops-server-production",
+      "vars": {
+        "ENVIRONMENT": "production",
+        "TOSS_AUTH_MODE": "live",
+        "TOSS_API_BASE_URL": "https://apps-in-toss-api.toss.im",
+        "ALLOWED_ORIGINS": "https://apps-in-toss.toss.im"   // CORS 화이트리스트 (ADR-011)
+      },
+      "d1_databases": [{
+        "binding": "DB",
+        "database_name": "studyops-db-prod",
+        "database_id": "YOUR_PROD_D1_ID",
+        "migrations_dir": "src/db/migrations"
+      }]
+    }
+  }
+}
+// SESSION_SECRET, MCP_API_TOKEN, TOSS_MTLS_*는 wrangler secret put으로 등록 (.dev.vars는 로컬 only)
 ```
 
-### 서버 `src/env.ts` (Bindings 타입)
+### 서버 `src/env.ts` (AppEnv — `wrangler types` 자동 생성 + SecretBindings intersect)
 ```typescript
-export interface Bindings {
-  DB: D1Database;
-  TOSS_AUTH_MODE: 'dev' | 'live';
-  TOSS_API_BASE_URL: string;
+// worker-configuration.d.ts (자동 생성) 의 Env + 수동 SecretBindings intersect.
+interface SecretBindings {
   SESSION_SECRET: string;
+  MCP_API_TOKEN: string;          // /mcp 인증 (ADR-010)
+  TOSS_MTLS_CERT?: string;        // live 모드 전용
+  TOSS_MTLS_KEY?: string;
   DISCORD_WEBHOOK_DEFAULT?: string;
 }
+
+export type AppEnv = {
+  Bindings: Env & SecretBindings;     // D1Database, ENVIRONMENT, TOSS_AUTH_MODE, ...
+  Variables: {
+    user: { userKey: string };        // authMiddleware 가 세팅
+    requestId: string;                // requestIdMiddleware 가 세팅
+  };
+};
 ```
 
 ### 클라이언트 `apps/client/.env`
@@ -806,17 +859,19 @@ cp apps/server/.dev.vars.example apps/server/.dev.vars
 ### D1 데이터베이스 준비 (최초 1회)
 ```bash
 cd apps/server
-npx wrangler d1 create studyops-db
-# → 출력된 database_id를 wrangler.toml에 반영
+npx wrangler d1 create studyops-db-dev
+npx wrangler d1 create studyops-db-prod --experimental-prepared-prod  # prod 전용 (ADR-007)
+# → 출력된 database_id들을 wrangler.jsonc에 반영 (dev/prod 각각)
 
 # 스키마에서 마이그레이션 SQL 생성
 npx drizzle-kit generate
 
 # 로컬 D1에 적용
-npx wrangler d1 migrations apply studyops-db --local
+npx wrangler d1 migrations apply studyops-db-dev --local
 
-# (프로덕션 배포 시) 원격 D1에 적용
-npx wrangler d1 migrations apply studyops-db --remote
+# 원격 dev/prod D1에 적용 (별도 커맨드, ADR-008 게이트)
+npx wrangler d1 migrations apply studyops-db-dev --remote
+npx wrangler d1 migrations apply studyops-db-prod --remote --env production
 ```
 
 ### 개발 서버 실행
@@ -898,13 +953,13 @@ npm run build -w apps/client
 - `apps/server/**` 전체
 
 **산출물:**
-1. Hono 엔트리 + 미들웨어 (auth, error).
+1. Hono 엔트리 + 미들웨어 (auth, error, requestId, cors).
 2. Drizzle 스키마 (`db/schema.ts`) + 마이그레이션 생성.
 3. Toss 인증 (`auth/toss.ts` dev/live 분기, `auth/routes.ts`).
 4. 세션 JWT (`lib/session.ts`).
 5. 라우트: studies, rounds, submissions, status, reminder-message, share-discord.
 6. Discord webhook (`discord/webhook.ts`).
-7. `wrangler.toml`, `.dev.vars.example`, `drizzle.config.ts`.
+7. `wrangler.jsonc` (env.production 포함), `.dev.vars.example`, `drizzle.config.ts`, `boot-check.ts`.
 
 **외부 의존:** `@studyops/shared`에서 타입 import. shared가 준비 안 됐으면 임시 로컬 타입으로 진행 후 교체.
 
@@ -1044,7 +1099,7 @@ T1 ──► 통합 테스트 (서버+클라 연결)
 ---
 
 **[Executor-S 작업 지시문]**
-> `apps/server/` 를 구축하세요. `docs/ARCHITECTURE.md`의 4-2(스키마), 4-3(API), 4-4(인증), 4-6(Discord), 4-7(환경변수), 4-8(명령)을 따르세요. Hono + Drizzle ORM + Cloudflare Workers + D1 조합으로, `src/index.ts`에 라우트 마운트, `db/schema.ts`에 5개 테이블(users/studies/rounds/participants/submissions), `auth/toss.ts`에 dev/live 분기 인증, `lib/session.ts`에 HS256 JWT, `routes/`에 모든 엔드포인트를 구현하세요. `wrangler.toml`, `.dev.vars.example`, `drizzle.config.ts`를 작성하고 `wrangler d1 create` → `drizzle-kit generate` → `--local` 적용까지 로컬에서 검증하세요. 완료 기준: `TOSS_AUTH_MODE=dev`로 `wrangler dev` 후 모든 엔드포인트 curl 테스트 통과. `@studyops/shared` 타입 import. `apps/server/**` 외 수정 금지.
+> `apps/server/` 를 구축하세요. `docs/ARCHITECTURE.md`의 4-2(스키마), 4-3(API), 4-4(인증), 4-6(Discord), 4-7(환경변수), 4-8(명령)을 따르세요. Hono + Drizzle ORM + Cloudflare Workers + D1 조합으로, `src/index.ts`에 라우트 마운트, `db/schema.ts`에 5개 테이블(users/studies/rounds/participants/submissions), `auth/toss.ts`에 dev/live 분기 인증, `lib/session.ts`에 HS256 JWT, `routes/`에 모든 엔드포인트를 구현하세요. `wrangler.jsonc` (env.production 포함), `.dev.vars.example`, `drizzle.config.ts`, `boot-check.ts`를 작성하고 `wrangler d1 create` → `drizzle-kit generate` → `--local` 적용까지 로컬에서 검증하세요. 완료 기준: `TOSS_AUTH_MODE=dev`로 `wrangler dev` 후 모든 엔드포인트 curl 테스트 통과. `@studyops/shared` 타입 import. `apps/server/**` 외 수정 금지.
 
 ---
 
