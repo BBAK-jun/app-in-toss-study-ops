@@ -12,6 +12,8 @@
     "deploy": "wrangler deploy",
     "deploy:production": "wrangler deploy --env production",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "types": "wrangler types",
     "db:generate": "drizzle-kit generate",
     "db:apply:dev": "wrangler d1 migrations apply studyops-db-dev --local",
@@ -31,8 +33,11 @@
     "zod3": "npm:zod@^3.25.76"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.18.8",
     "drizzle-kit": "^0.28.0",
+    "miniflare": "^4.20260722.0",
     "typescript": "^5.6.0",
+    "vitest": "^4.1.10",
     "wrangler": "^4.114.0"
   }
 }
