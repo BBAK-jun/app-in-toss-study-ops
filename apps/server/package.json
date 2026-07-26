@@ -22,9 +22,13 @@
     "secrets:check": "node scripts/secrets-check.mjs"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@studyops/shared": "*",
+    "agents": "^0.19.0",
     "drizzle-orm": "^0.36.0",
-    "hono": "^4.6.0"
+    "hono": "^4.6.0",
+    "zod": "^4.0.0",
+    "zod3": "npm:zod@^3.25.76"
   },
   "devDependencies": {
     "drizzle-kit": "^0.28.0",

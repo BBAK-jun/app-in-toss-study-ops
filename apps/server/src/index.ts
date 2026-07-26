@@ -1,9 +1,3 @@
-// Hono app 엔트리. 라우트 마운트 + 미들웨어 (logger, cors, errorHandler, auth).
-// ARCHITECTURE.md 4-3 코드 기반. /studies/* → studyRoutes, /rounds/* → roundRoutes.
-//
-// 부팅 검사: 첫 요청에서 assertBootEnvironment 실행 (isolate lifetime 동안 1회).
-// 모듈 수준 변수지만 request-scoped 상태가 아님 — workers-best-practices "no global
-// request state" 규칙 미위반. cold start 때마다 재평가됨.
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { cors } from 'hono/cors';
@@ -15,23 +9,22 @@ import { authRoutes } from './auth/routes';
 import { studyRoutes } from './routes/studies';
 import { roundRoutes } from './routes/rounds';
 import { assertBootEnvironment, logBootInfo } from './boot-check';
+import { StudyOpsMcpAgent } from './mcp/server';
+
+export { StudyOpsMcpAgent };
 
 const app = new Hono<AppEnv>();
 
-// 부팅 검사 — 첫 요청에서만 실행 (isolate cold start 시 1회).
-// 실패 시 throw → errorHandler 가 500 반환 + 구조화 로그.
 let bootVerified = false;
-app.use('*', async (c, next) => {
+function ensureBoot(env: AppEnv['Bindings']): void {
   if (!bootVerified) {
-    assertBootEnvironment(c.env);
-    logBootInfo(c.env);
+    assertBootEnvironment(env);
+    logBootInfo(env);
     bootVerified = true;
   }
-  await next();
-});
+}
 
 app.use('*', logger());
-// MVP: Bearer 토큰 인증(쿠키 X)이라 와일드카드 출처 허용. Pages 도메인 확정 후 origin 좁히기 권장.
 app.use('*', cors({
   origin: '*',
   allowHeaders: ['Authorization', 'Content-Type'],
@@ -40,11 +33,9 @@ app.use('*', cors({
 }));
 app.onError(errorHandler);
 
-// 공개 라우트
 app.route('/', healthRoutes);
 app.route('/auth', authRoutes);
 
-// 인증 필요 라우트 그룹
 const protectedApi = new Hono<AppEnv>();
 protectedApi.use('*', authMiddleware);
 protectedApi.route('/studies', studyRoutes);
@@ -52,4 +43,27 @@ protectedApi.route('/rounds', roundRoutes);
 
 app.route('/', protectedApi);
 
-export default app;
+export default {
+  fetch(request: Request, env: AppEnv['Bindings'], ctx: ExecutionContext): Response | Promise<Response> {
+    ensureBoot(env);
+
+    const url = new URL(request.url);
+
+    if (url.pathname.startsWith('/mcp')) {
+      const auth = request.headers.get('Authorization');
+      if (!env.MCP_API_TOKEN || auth !== `Bearer ${env.MCP_API_TOKEN}`) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return StudyOpsMcpAgent.serve('/mcp', { binding: 'STUDYOPS_MCP' }).fetch(
+        request,
+        env,
+        ctx,
+      );
+    }
+
+    return app.fetch(request, env, ctx);
+  },
+};

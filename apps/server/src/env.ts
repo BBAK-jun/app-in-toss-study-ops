@@ -12,6 +12,7 @@
 export interface SecretBindings {
   SESSION_SECRET: string;
   DISCORD_WEBHOOK_DEFAULT?: string;
+  MCP_API_TOKEN: string; // Bearer token for /mcp endpoint (Sisyphus agent). See ADR-010.
 }
 
 // Hono app 전체 컨텍스트 타입. 모든 라우트/미들웨어에서 공유.

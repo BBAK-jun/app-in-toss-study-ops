@@ -30,6 +30,16 @@
     "head_sampling_rate": 1
   },
 
+  // MCP server Durable Object — read-only tools for Sisyphus agent. See ADR-010.
+  "durable_objects": {
+    "bindings": [
+      { "name": "STUDYOPS_MCP", "class_name": "StudyOpsMcpAgent" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["StudyOpsMcpAgent"] }
+  ],
+
   "env": {
     "production": {
       // Distinct name so bare `wrangler deploy` doesn't overwrite prod.
@@ -54,6 +64,13 @@
       "observability": {
         "enabled": true,
         "head_sampling_rate": 1
+      },
+
+      // MCP DO binding — inherited from top-level durable_objects/migrations. See ADR-010.
+      "durable_objects": {
+        "bindings": [
+          { "name": "STUDYOPS_MCP", "class_name": "StudyOpsMcpAgent" }
+        ]
       }
     }
   }

@@ -45,11 +45,18 @@
   - [x] 부트 타임 fail-fast 검증 (`boot-check.ts`)
   - [x] ADR 4건 (env 전략 / D1 격리 / 배포 게이트 / MCP 통합)
   - [x] Wiki 에피소드 페이지 + notion MCP 화이트리스트 추가
+- **완료된 것** (Worker MCP 서버, 7/26):
+  - [x] `StudyOpsMcpAgent` DO (McpAgent 상속, read-only 5개 도구)
+  - [x] `/mcp` 엔드포인트 + Bearer token 인증 (`MCP_API_TOKEN`)
+  - [x] boot-check prod 검증 (MCP_API_TOKEN 필수)
+  - [x] ADR-010 (agents-sdk + MCP SDK + zod3 의존성 결정)
+  - [x] zod v3/v4 공존 (agents는 v4 peer dep, MCP SDK는 v3 — npm alias `zod3`로 해결)
 - **다음 우선순위**:
   1. 파일럿 사용자 1명 확보 (앱인토스 내부 스터디)
   2. GitHub Actions Secrets 등록 (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID)
   3. 8/5 데모 시연 흐름 다듬기
-  4. (Phase 4) Cloudflare Worker as MCP Server 검토
+  4. MCP 클라이언트 설정 (Sisyphus → `/mcp` 엔드포인트 연결)
+  5. GitHub remote 설정 + PR 머지 (env-separation-d1-isolation 브랜치)
 - **일시 중단 / 후순위**: 멀티테넌트 SaaS, 결제, Notion 연동, AI 요약 고도화
 
 ---
@@ -280,3 +287,4 @@ githubPR: null       # Phase 2
 | 2026.07.26 | 1.0 | 최초 작성. HARNESS v1 확정. |
 | 2026.07.26 | 1.1 | §2 Sprint 상태 업데이트 (하네스 환경 구축 완료). ADR-005 (watchexec + launchd 자동화) 추가. |
 | 2026.07.26 | 1.2 | §2 Sprint 업데이트 (환경 분리 완료), §3.4 MCP 화이트리스트에 notion 추가. ADR-006~009. |
+| 2026.07.26 | 1.3 | §2 Sprint 업데이트 (Worker MCP 서버 완료). ADR-010 (agents-sdk + MCP SDK + zod3 의존성, StudyOpsMcpAgent DO). |

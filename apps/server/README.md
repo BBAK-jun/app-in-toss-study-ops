@@ -27,6 +27,7 @@ npx wrangler types
 - `ENVIRONMENT`: `dev` | `production` (부트 검증에 사용)
 - `SESSION_SECRET`: JWT 서명 비밀키 (HS256, 32자 이상)
 - `TOSS_API_BASE_URL`: Toss 파트너 API 베이스 URL
+- `MCP_API_TOKEN`: `/mcp` 엔드포인트 Bearer 인증 토큰 (Sisyphus agent용, prod 필수). See ADR-010.
 
 ## 로컬 개발
 
@@ -99,6 +100,7 @@ npx wrangler secret put SESSION_SECRET
 npx wrangler secret put SESSION_SECRET --env production
 npx wrangler secret put TOSS_MTLS_CERT --env production  # live 모드
 npx wrangler secret put TOSS_MTLS_KEY --env production    # live 모드
+npx wrangler secret put MCP_API_TOKEN --env production     # /mcp 인증 (ADR-010)
 ```
 
 `scripts/secrets-check.mjs`로 등록 상태 확인:
@@ -108,17 +110,53 @@ node scripts/secrets-check.mjs         # dev 확인
 node scripts/secrets-check.mjs production  # prod 확인
 ```
 
+## MCP 서버 (Sisyphus agent용)
+
+`/mcp` 경로에 MCP(Model Context Protocol) 서버가 통합되어 있음 (ADR-010).
+Sisyphus(AI agent)가 read-only로 D1 데이터를 조회.
+
+### 인증
+
+Bearer token (`MCP_API_TOKEN` secret). prod에서는 boot-check가 존재 검증.
+
+```bash
+# 로컬 dev — .dev.vars 에 MCP_API_TOKEN 설정
+echo "MCP_API_TOKEN=dev-token-here" >> .dev.vars
+
+# prod
+npx wrangler secret put MCP_API_TOKEN --env production
+```
+
+### 도구 (read-only)
+
+| 도구 | 설명 | 파라미터 |
+|---|---|---|
+| `list_studies` | 전체 스터디 목록 (operator view) | 없음 |
+| `get_study` | 단일 스터디 상세 (참여자/회차 수 포함) | `studyId: string` |
+| `list_rounds` | 스터디의 회차 목록 | `studyId: string` |
+| `get_round_status` | 회차 제출 현황 (제출률, 미제출자) | `roundId: string` |
+| `list_low_submission_rounds` | 저제출 회차 대시보드 | `maxRate?: number` (기본 0.5) |
+
+### 클라이언트 설정 (Sisyphus)
+
+```
+MCP endpoint: https://<worker-domain>/mcp
+Authorization: Bearer <MCP_API_TOKEN>
+Transport: Streamable HTTP
+```
+
 ## 구조
 
 ```
 src/
-├── index.ts              # Hono 앱 엔트리 (boot-check lazy middleware)
-├── boot-check.ts         # 부트 타임 fail-fast 검증 (env 조합, secret 강도)
+├── index.ts              # 엔트리 — { fetch } handler (/mcp → DO, 나머지 → Hono app)
+├── boot-check.ts         # 부트 타임 fail-fast 검증 (env 조합, secret 강도, MCP_API_TOKEN)
 ├── env.ts                # AppEnv 타입 (Env & SecretBindings intersect)
+├── mcp/                  # MCP 서버 (StudyOpsMcpAgent DO, read-only tools). ADR-010.
 ├── auth/                 # Toss OAuth2 / JWT 인증
 ├── db/                   # Drizzle 스키마 + 마이그레이션
 ├── lib/                  # 공통 유틸리티 (HttpError, response helpers)
-├── middleware/            # Hono 미들웨어 (error, auth guard)
+├── middleware/           # Hono 미들웨어 (error, auth guard)
 ├── routes/               # Hono 라우트 그룹
 └── services/             # 비즈니스 로직 (option: bot, study, etc.)
 ```

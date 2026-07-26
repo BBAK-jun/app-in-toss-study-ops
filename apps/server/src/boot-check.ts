@@ -46,7 +46,16 @@ export function assertBootEnvironment(env: AppEnv['Bindings']): void {
     });
   }
 
-  // 3. 프로덕션에서 dev D1 바인딩 사용 금지 — DB 격리 강제
+  // 3. MCP_API_TOKEN 필수 (prod) — /mcp 엔드포인트 인증. See ADR-010.
+  if (env.ENVIRONMENT === 'production' && !env.MCP_API_TOKEN) {
+    violations.push({
+      code: 'MCP_API_TOKEN_MISSING',
+      message:
+        'MCP_API_TOKEN is not set. Required for /mcp endpoint authentication in production. See ADR-010.',
+    });
+  }
+
+  // 4. 프로덕션에서 dev D1 바인딩 사용 금지 — DB 격리 강제
   // env.DB 자체로는 UUID를 노출하지 않으므로, wrangler.jsonc의 ENVIRONMENT=production
   // 매핑이 올바른 DB를 가리키는지는 배포 시 --env production 플래그로 보장된다.
   // 런타임에서는 ENVIRONMENT 값 자체가 신뢰 출처. (wrangler.jsonc 검증은 CI가 담당.)
