@@ -1,5 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Paragraph, Spacing, Button } from '@toss/tds-mobile';
+import { logger } from '../lib/logger';
+import { LOG_EVENTS } from '@studyops/shared';
 
 interface Props {
   children: ReactNode;
@@ -18,8 +20,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    // MVP: 콘솔 로그. 추후 센터리/로그 연동 지점.
-    console.error('[ErrorBoundary]', error, info);
+    logger.error(
+      LOG_EVENTS.CLIENT_ERROR_BOUNDARY,
+      error.message,
+      { componentStack: info.componentStack },
+      error.stack,
+    );
   }
 
   handleReset = (): void => {

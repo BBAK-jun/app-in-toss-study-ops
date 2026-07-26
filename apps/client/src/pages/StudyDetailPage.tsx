@@ -23,9 +23,12 @@ import {
   getStudy,
   listParticipants,
   listRounds,
+  listRoundSummaries,
+  type RoundSummary,
   removeParticipant,
   updateStudy,
 } from '../api/studies';
+import { getDeadlineUrgency, getRateColor } from '../lib/formatDate';
 import { usePageLayout } from '../layout/PageLayoutContext';
 
 type TabValue = 'rounds' | 'participants';
@@ -37,6 +40,7 @@ export function StudyDetailPage() {
 
   const [study, setStudy] = useState<StudyDto | null>(null);
   const [rounds, setRounds] = useState<RoundDto[] | null>(null);
+  const [roundSummaries, setRoundSummaries] = useState<RoundSummary[] | null>(null);
   const [participants, setParticipants] = useState<ParticipantDto[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<TabValue>('rounds');
@@ -58,13 +62,15 @@ export function StudyDetailPage() {
   const refresh = useCallback(async () => {
     setError(null);
     try {
-      const [s, r, p] = await Promise.all([
+      const [s, r, rs, p] = await Promise.all([
         getStudy(studyId),
         listRounds(studyId),
+        listRoundSummaries(studyId),
         listParticipants(studyId),
       ]);
       setStudy(s);
       setRounds(r);
+      setRoundSummaries(rs);
       setParticipants(p);
       setWebhookUrl(s.discordWebhookUrl ?? '');
     } catch (e) {
@@ -178,30 +184,62 @@ export function StudyDetailPage() {
           ) : null}
           {rounds ? (
             <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-              {rounds.map((r) => (
-                <ListRow
-                  key={r.id}
-                  verticalPadding="large"
-                  arrowType="right"
-                  withTouchEffect
-                  onClick={() => navigate(`/rounds/${r.id}`)}
-                  contents={
-                    <>
-                      <Paragraph typography="t5" fontWeight="medium">
-                        {r.roundNumber}회차 · {r.title}
-                      </Paragraph>
-                      {r.dueAt ? (
-                        <>
-                          <Spacing size={4} />
-                          <Paragraph typography="t7" color="#8B95A1">
-                            마감 {new Date(r.dueAt).toLocaleString('ko-KR')}
-                          </Paragraph>
-                        </>
-                      ) : null}
-                    </>
-                  }
-                />
-              ))}
+              {rounds.map((r) => {
+                const summary = roundSummaries?.find((s) => s.roundId === r.id);
+                const urgency = getDeadlineUrgency(r.dueAt);
+                const rateColor = summary ? getRateColor(summary.rate) : '#8B95A1';
+                const pct = summary ? Math.round(summary.rate * 100) : null;
+                return (
+                  <ListRow
+                    key={r.id}
+                    verticalPadding="large"
+                    arrowType="right"
+                    withTouchEffect
+                    onClick={() => navigate(`/rounds/${r.id}`)}
+                    contents={
+                      <>
+                        <Paragraph typography="t5" fontWeight="medium">
+                          {r.roundNumber}회차 · {r.title}
+                        </Paragraph>
+                        {urgency ? (
+                          <>
+                            <Spacing size={4} />
+                            <Paragraph typography="t7" color={urgency.color} fontWeight={urgency.bold ? 'bold' : 'medium'}>
+                              {urgency.label}
+                            </Paragraph>
+                          </>
+                        ) : null}
+                        {summary ? (
+                          <>
+                            <Spacing size={4} />
+                            <Paragraph typography="t7" color="#8B95A1" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                              제출 {summary.submittedCount}/{summary.total}명 · 미제출 {summary.total - summary.submittedCount}명
+                            </Paragraph>
+                            <Spacing size={6} />
+                            <div style={{ width: '100%', height: 4, background: '#E5E8EB', borderRadius: 2, overflow: 'hidden' }}>
+                              <div style={{ width: `${pct}%`, height: '100%', background: rateColor, borderRadius: 2 }} />
+                            </div>
+                          </>
+                        ) : null}
+                      </>
+                    }
+                    right={
+                      summary && pct !== null ? (
+                        <span style={{
+                          fontSize: 13,
+                          fontWeight: 'bold',
+                          color: rateColor,
+                          fontVariantNumeric: 'tabular-nums',
+                          minWidth: 36,
+                          textAlign: 'right',
+                        }}>
+                          {pct}%
+                        </span>
+                      ) : undefined
+                    }
+                  />
+                );
+              })}
             </ul>
           ) : null}
         </>

@@ -5,10 +5,14 @@ import { errorHandler } from './middleware/error';
 import { authMiddleware } from './middleware/auth';
 import { requestIdMiddleware } from './middleware/request-id';
 import { corsMiddleware } from './middleware/cors';
+import { loggingMiddleware } from './middleware/logging';
 import { healthRoutes } from './routes/health';
 import { authRoutes } from './auth/routes';
 import { studyRoutes } from './routes/studies';
 import { roundRoutes } from './routes/rounds';
+import { logRoutes } from './routes/logs';
+import { adminLogRoutes } from './routes/admin/logs';
+import { runRetentionJob } from './scheduled';
 import { assertBootEnvironment, logBootInfo } from './boot-check';
 import { HttpError, formatHttpError } from './lib/http-error';
 import { StudyOpsMcpAgent } from './mcp/server';
@@ -29,6 +33,7 @@ function ensureBoot(env: AppEnv['Bindings']): void {
 app.use('*', logger());
 app.use('*', requestIdMiddleware);
 app.use('*', corsMiddleware);
+app.use('*', loggingMiddleware);
 app.onError(errorHandler);
 
 app.route('/', healthRoutes);
@@ -38,11 +43,13 @@ const protectedApi = new Hono<AppEnv>();
 protectedApi.use('*', authMiddleware);
 protectedApi.route('/studies', studyRoutes);
 protectedApi.route('/rounds', roundRoutes);
+protectedApi.route('/logs', logRoutes);
+protectedApi.route('/admin/logs', adminLogRoutes);
 
 app.route('/', protectedApi);
 
 export default {
-  fetch(request: Request, env: AppEnv['Bindings'], ctx: ExecutionContext): Response | Promise<Response> {
+  async fetch(request: Request, env: AppEnv['Bindings'], ctx: ExecutionContext): Promise<Response> {
     ensureBoot(env);
 
     const url = new URL(request.url);
@@ -50,6 +57,16 @@ export default {
     if (url.pathname.startsWith('/mcp')) {
       // /mcp는 Hono 체인 밖 — requestId/errorHandler를 직접 호출해 동일 포맷/로그를 유지 (A3).
       const requestId = request.headers.get('cf-ray') || crypto.randomUUID();
+
+      const mcpIp = request.headers.get('cf-connecting-ip') || 'unknown';
+      const { success: mcpRateOk } = await env.MCP_RATE_LIMITER.limit({ key: `mcp:${mcpIp}` });
+      if (!mcpRateOk) {
+        return formatHttpError(
+          new HttpError(429, 'TOO_MANY_REQUESTS', 'Rate limit exceeded. Try again later.'),
+          { requestId, method: request.method, path: url.pathname, userKey: null },
+        );
+      }
+
       const auth = request.headers.get('Authorization');
       if (!env.MCP_API_TOKEN || auth !== `Bearer ${env.MCP_API_TOKEN}`) {
         return formatHttpError(
@@ -65,5 +82,14 @@ export default {
     }
 
     return app.fetch(request, env, ctx);
+  },
+
+  async scheduled(
+    _controller: ScheduledController,
+    env: AppEnv['Bindings'],
+    ctx: ExecutionContext,
+  ): Promise<void> {
+    ensureBoot(env);
+    ctx.waitUntil(runRetentionJob(env));
   },
 };

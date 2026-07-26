@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { eq } from 'drizzle-orm';
 import type { AppEnv } from '../env';
 import { authMiddleware } from '../middleware/auth';
+import { authLoginRateLimit } from '../middleware/rate-limit';
 import { HttpError } from '../lib/http-error';
 import { issueSession } from '../lib/session';
 import { resolveTossUser } from './toss';
@@ -13,7 +14,7 @@ import type { LoginRequest, LoginResponse, SessionUser } from '@studyops/shared'
 export const authRoutes = new Hono<AppEnv>();
 
 // POST /auth/login — 인가코드 → 세션 토큰 발급
-authRoutes.post('/login', async (c) => {
+authRoutes.post('/login', authLoginRateLimit, async (c) => {
   const body = (await c.req.json().catch(() => null)) as Partial<LoginRequest> | null;
   if (!body || typeof body.authorizationCode !== 'string' || !body.referrer) {
     throw new HttpError(400, 'VALIDATION_ERROR', 'authorizationCode and referrer are required');

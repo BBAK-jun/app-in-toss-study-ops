@@ -1,0 +1,91 @@
+# deploy-dev.yml — main push 시 dev 환경 자동 배포
+# 서버(Worker) + 클라이언트(머지한담) 동시 배포
+#
+# 필수 GitHub Secrets:
+#   CLOUDFLARE_API_TOKEN   — Workers Edit 권한
+#   CLOUDFLARE_ACCOUNT_ID  — Cloudflare 계정 ID
+#   AIT_DEV_API_KEY        — 앱인토스 dev 프로파일 API 키
+name: Deploy Dev
+
+on:
+  push:
+    branches: [main]
+
+# 동시 배포 방지 — 같은 브랜치면 이전 실행 취소
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: true
+
+jobs:
+  # CI 게이트 — 타입체크 + 빌드 통과해야 배포 진행
+  verify:
+    name: Typecheck & Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      passed: ${{ steps.check.outputs.passed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:shared
+      - run: npm run typecheck
+      - run: npm run build
+      - id: check
+        run: echo "passed=true" >> "$GITHUB_OUTPUT"
+
+  deploy-server:
+    name: Deploy Server (Worker dev)
+    needs: verify
+    if: needs.verify.outputs.passed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:shared
+      - name: Deploy Worker (dev)
+        working-directory: apps/server
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-client:
+    name: Deploy Client (머지한담)
+    needs: verify
+    if: needs.verify.outputs.passed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:shared
+
+      - name: Write ait credentials
+        run: |
+          mkdir -p ~/.ait
+          cat > ~/.ait/credentials <<EOF
+          {
+            "dev": "${{ secrets.AIT_DEV_API_KEY }}"
+          }
+          EOF
+          chmod 600 ~/.ait/credentials
+
+      - name: Build & Deploy client (dev)
+        working-directory: apps/client
+        run: npm run deploy:dev
+        env:
+          VITE_APP_ENV: development
+          VITE_API_BASE_URL: https://studyops-server.mountain-race.workers.dev

@@ -7,25 +7,34 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:ait": "ait build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "deploy:dev": "VITE_APP_ENV=development VITE_API_BASE_URL=https://studyops-server.mountain-race.workers.dev ait build && ait deploy --profile dev",
+    "deploy:prod": "VITE_APP_ENV=live VITE_API_BASE_URL=https://studyops-server-production.mountain-race.workers.dev ait build && ait deploy --profile prod",
+    "keys:set:dev": "bash scripts/ait-keys.sh set dev",
+    "keys:set:prod": "bash scripts/ait-keys.sh set prod",
+    "keys:sync": "bash scripts/ait-keys.sh sync",
+    "keys:list": "bash scripts/ait-keys.sh list",
+    "keys:remove": "bash scripts/ait-keys.sh remove"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0",
+    "@apps-in-toss/web-framework": "^2.10.5",
+    "@emotion/react": "^11.13.0",
+    "@studyops/shared": "*",
     "@toss/tds-mobile": "^2.5.0",
     "@toss/tds-mobile-ait": "^2.5.0",
-    "@emotion/react": "^11.13.0",
-    "@apps-in-toss/web-framework": "^2.10.5",
-    "@studyops/shared": "*"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^5.4.11",
+    "@types/node": "^20.17.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@types/node": "^20.17.0",
-    "typescript": "^5.6.3"
+    "@vitejs/plugin-react": "^4.3.4",
+    "idb-keyval": "^6.3.0",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
   }
 }

@@ -81,24 +81,25 @@ export function ReminderPage() {
           리마인드 문구
         </Paragraph>
         <Spacing size={8} />
-        <div
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          disabled={loading}
+          placeholder={loading ? '문구를 만드는 중…' : '리마인드 문구를 입력하세요'}
           style={{
+            width: '100%',
             background: '#FFFFFF',
             border: '1px solid #E5E8EB',
             borderRadius: 16,
             padding: 16,
             minHeight: 160,
-            whiteSpace: 'pre-wrap',
+            fontSize: 15,
+            lineHeight: 1.5,
+            resize: 'vertical',
+            fontFamily: 'inherit',
+            boxSizing: 'border-box',
           }}
-        >
-          {loading ? (
-            <Paragraph typography="t6" color="#8B95A1">
-              문구를 만드는 중…
-            </Paragraph>
-          ) : (
-            <Paragraph typography="t6">{message}</Paragraph>
-          )}
-        </div>
+        />
 
         <Spacing size={12} />
         <div style={{ display: 'flex', gap: 8 }}>
@@ -106,7 +107,7 @@ export function ReminderPage() {
             복사하기
           </Button>
           <Button variant="weak" display="block" onClick={() => navigate(-1)}>
-            이전으로
+            뒤로
           </Button>
         </div>
       </div>
