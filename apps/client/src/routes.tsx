@@ -18,7 +18,6 @@ import { RoundDetailPage } from './pages/RoundDetailPage';
 import { SubmissionCreatePage } from './pages/SubmissionCreatePage';
 import { ReminderPage } from './pages/ReminderPage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { LogsPage } from './pages/admin/LogsPage';
 import { RefreshButton } from './layout/RefreshButton';
 
 /**
@@ -76,14 +75,6 @@ export const routes: RouteSpec[] = [
     layoutGroup: 'gnb',
     layout: { title: '리마인드/공유', back: true },
   },
-  {
-    path: '/admin/logs',
-    element: <LogsPage />,
-    protected: true,
-    layoutGroup: 'gnb',
-    layout: { title: '로그 대시보드', back: true },
-  },
-
   // --- 404 ---
   {
     path: '*',

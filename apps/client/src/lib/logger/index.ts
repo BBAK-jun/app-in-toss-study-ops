@@ -8,7 +8,7 @@ const FLUSH_INTERVAL_MS = 30_000;
 const FLUSH_DEBOUNCE_MS = 2_000;
 const BATCH_SIZE = 50;
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
+const BASE_URL = import.meta.env.VITE_LOG_SERVER_URL ?? '';
 
 const isBrowser =
   typeof window !== 'undefined' && typeof document !== 'undefined';

@@ -2,7 +2,6 @@ import type { Context } from 'hono';
 import type { LogLevel, LogEntry, LogSource, LogEvent } from '@studyops/shared';
 import { LOG_SAMPLING_RATE, LOG_LEVEL_WEIGHT } from '@studyops/shared';
 import type { AppEnv } from '../env';
-import { forwardToLogServer } from './log-forwarder';
 
 export interface LogEntryInput {
   level: LogLevel;
@@ -25,21 +24,20 @@ export interface LogEntryInput {
 }
 
 export interface LogContext {
+  db: D1Database;
   executionCtx: { waitUntil(promise: Promise<unknown>): void };
   env: 'dev' | 'production';
   requestId?: string;
-  logServerUrl?: string;
   discordWebhookDefault?: string;
   appVersion?: string;
 }
 
 export function buildLogContext(c: Context<AppEnv>): LogContext {
   return {
+    db: c.env.DB,
     executionCtx: c.executionCtx,
     env: c.env.ENVIRONMENT === 'production' ? 'production' : 'dev',
     requestId: c.get('requestId'),
-    logServerUrl: c.env.LOG_SERVER_URL,
-    discordWebhookDefault: c.env.DISCORD_WEBHOOK_DEFAULT,
   };
 }
 
@@ -80,21 +78,19 @@ export function logWithContext(ctx: LogContext, input: LogEntryInput): void {
         : 'log';
   console[consoleFn](JSON.stringify(entry));
 
-  if (shouldSample(entry, ctx.env) && ctx.logServerUrl) {
+  if (shouldSample(entry, ctx.env)) {
     ctx.executionCtx.waitUntil(
-      forwardToLogServer(
-        { LOG_SERVER_URL: ctx.logServerUrl, ENVIRONMENT: ctx.env },
-        entry,
-      ).catch(() => {}),
-    );
-  }
-
-  if (
-    (entry.level === 'error' || entry.level === 'fatal') &&
-    ctx.discordWebhookDefault
-  ) {
-    ctx.executionCtx.waitUntil(
-      sendDiscordAlert(ctx.discordWebhookDefault, entry).catch(() => {}),
+      insertLog(ctx.db, entry).catch((err: unknown) => {
+        console.error(
+          JSON.stringify({
+            level: 'error',
+            event: 'log.persistence_failed',
+            message: 'Failed to persist log to D1',
+            originalEvent: entry.event,
+            error: err instanceof Error ? err.message : String(err),
+          }),
+        );
+      }),
     );
   }
 }
@@ -160,36 +156,45 @@ export function sanitizeContext(
   return out;
 }
 
-async function sendDiscordAlert(webhookUrl: string, entry: LogEntry): Promise<void> {
-  const color =
-    entry.level === 'fatal' ? 0x000000 : entry.level === 'error' ? 0xEF4444 : 0xF59E0B;
+const INSERT_SQL = `INSERT INTO logs (
+  ts, level, source, event, message,
+  user_id, session_id, request_id,
+  method, path, status, duration_ms,
+  context, stack, env, version, user_agent, ip_hash
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-  const fields: { name: string; value: string; inline: boolean }[] = [
-    { name: 'Environment', value: entry.env ?? '?', inline: true },
-    { name: 'Source', value: entry.source, inline: true },
-  ];
-  if (entry.path) fields.push({ name: 'Path', value: entry.path, inline: true });
-  if (entry.requestId)
-    fields.push({ name: 'Request ID', value: `\`${entry.requestId}\``, inline: true });
-  if (entry.userId != null)
-    fields.push({ name: 'User', value: String(entry.userId), inline: true });
-  if (entry.durationMs != null)
-    fields.push({ name: 'Duration', value: `${entry.durationMs}ms`, inline: true });
+export async function insertLog(db: D1Database, entry: LogEntry): Promise<void> {
+  await db
+    .prepare(INSERT_SQL)
+    .bind(
+      entry.ts, entry.level, entry.source, entry.event, entry.message,
+      entry.userId ?? null, entry.sessionId ?? null, entry.requestId ?? null,
+      entry.method ?? null, entry.path ?? null, entry.status ?? null,
+      entry.durationMs ?? null,
+      entry.context ? JSON.stringify(entry.context) : null,
+      entry.stack ?? null, entry.env ?? 'dev', entry.version ?? null,
+      entry.userAgent ?? null, entry.ipHash ?? null,
+    )
+    .run();
+}
 
-  const embed = {
-    title: `[${entry.level.toUpperCase()}] ${entry.event}`,
-    description: entry.message.slice(0, 4000),
-    color,
-    fields: fields.slice(0, 25),
-    footer: { text: 'StudyOps Logger' },
-    timestamp: new Date(entry.ts).toISOString(),
-  };
-
-  await fetch(webhookUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ embeds: [embed] }),
-  });
+export async function insertLogBatch(
+  db: D1Database,
+  entries: LogEntry[],
+): Promise<void> {
+  if (entries.length === 0) return;
+  const stmts = entries.map((entry) =>
+    db.prepare(INSERT_SQL).bind(
+      entry.ts, entry.level, entry.source, entry.event, entry.message,
+      entry.userId ?? null, entry.sessionId ?? null, entry.requestId ?? null,
+      entry.method ?? null, entry.path ?? null, entry.status ?? null,
+      entry.durationMs ?? null,
+      entry.context ? JSON.stringify(entry.context) : null,
+      entry.stack ?? null, entry.env ?? 'dev', entry.version ?? null,
+      entry.userAgent ?? null, entry.ipHash ?? null,
+    ),
+  );
+  await db.batch(stmts);
 }
 
 export function levelGte(a: LogLevel, b: LogLevel): boolean {

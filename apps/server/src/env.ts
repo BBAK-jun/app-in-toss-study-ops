@@ -12,7 +12,8 @@
 export interface SecretBindings {
   SESSION_SECRET: string;
   DISCORD_WEBHOOK_DEFAULT?: string;
-  MCP_API_TOKEN: string; // Bearer token for /mcp endpoint (Sisyphus agent). See ADR-010.
+  MCP_API_TOKEN: string;
+  LOG_SERVER_URL?: string;
 }
 
 // wrangler types가 ratelimits 바인딩을 optional(?)로 생성하지만,

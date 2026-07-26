@@ -52,17 +52,3 @@ export const roundKeys = {
   // ['rounds', 'detail', roundId, 'submissions'] — 제출 목록.
   submissions: (roundId: string) => [...roundKeys.detail(roundId), 'submissions'] as const,
 } as const;
-
-export const logKeys = {
-  // ['logs'] — 로그 도메인 전체.
-  all: ['logs'] as const,
-
-  // ['logs', 'list', query] — 필터+커서 기반 로그 목록.
-  list: (query: {
-    level?: string;
-    source?: string;
-    search?: string;
-    cursor?: string;
-    limit?: number;
-  }) => [...logKeys.all, 'list', query] as const,
-} as const;
