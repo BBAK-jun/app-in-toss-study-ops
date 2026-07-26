@@ -7,6 +7,8 @@
 
   // Default environment: local development.
   // Production via `wrangler deploy --env production`. See ADR-006.
+  // ALLOWED_ORIGINS: dev는 localhost 화이트리스트가 하드코딩되어 있어 var 불필요.
+  // prod에서는 env.production.vars.ALLOWED_ORIGINS 에서 주입 (콤마 구분). ADR-011.
   "vars": {
     "ENVIRONMENT": "dev",
     "TOSS_AUTH_MODE": "dev",
@@ -49,7 +51,10 @@
       "vars": {
         "ENVIRONMENT": "production",
         "TOSS_AUTH_MODE": "live",
-        "TOSS_API_BASE_URL": "https://apps-in-toss-api.toss.im"
+        "TOSS_API_BASE_URL": "https://apps-in-toss-api.toss.im",
+        // CORS 화이트리스트 — 콤마로 구분된 origin 리스트. ADR-011.
+        // 실제 앱인토스 WebView origin들로 교체 필요. 미설정 시 모든 cross-origin 요청 거부.
+        "ALLOWED_ORIGINS": "https://apps-in-toss.toss.im"
       },
 
       // Prod D1 — separate instance from dev. See ADR-007.

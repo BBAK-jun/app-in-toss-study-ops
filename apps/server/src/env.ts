@@ -17,11 +17,13 @@ export interface SecretBindings {
 
 // Hono app 전체 컨텍스트 타입. 모든 라우트/미들웨어에서 공유.
 // Variables.user 는 authMiddleware 통과 후 세팅됨.
+// Variables.requestId 는 requestIdMiddleware 가 세팅 (X-Request-Id 응답 헤더 + 로그 추적).
 export type AppEnv = {
   // `Env`는 wrangler types가 생성한 전역 인터페이스 (worker-configuration.d.ts).
   // 거기에 secrets를 합친다.
   Bindings: Env & SecretBindings;
   Variables: {
     user: { userKey: number };
+    requestId: string;
   };
 };
