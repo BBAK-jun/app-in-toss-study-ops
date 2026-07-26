@@ -1,8 +1,18 @@
 import { describe, it, expect, vi } from 'vitest';
+import { env } from 'cloudflare:test';
 import { Hono } from 'hono';
 import type { AppEnv } from '../env';
 import { authLoginRateLimit } from './rate-limit';
 import { errorHandler } from './error';
+
+function makeEnv(limitFn: ReturnType<typeof vi.fn>): AppEnv['Bindings'] {
+  return {
+    ...env,
+    SESSION_SECRET: 'test-session-secret-at-least-32-chars-long',
+    MCP_API_TOKEN: 'test-mcp-token',
+    AUTH_RATE_LIMITER: { limit: limitFn },
+  } as AppEnv['Bindings'];
+}
 
 function createApp() {
   const app = new Hono<AppEnv>();
@@ -20,7 +30,7 @@ describe('authLoginRateLimit', () => {
       new Request('http://localhost/', {
         headers: { 'cf-connecting-ip': '1.2.3.4' },
       }),
-      { AUTH_RATE_LIMITER: { limit } } as AppEnv['Bindings'],
+      makeEnv(limit),
     );
     expect(res.status).toBe(200);
     expect(await res.text()).toBe('ok');
@@ -34,7 +44,7 @@ describe('authLoginRateLimit', () => {
       new Request('http://localhost/', {
         headers: { 'cf-connecting-ip': '1.2.3.4' },
       }),
-      { AUTH_RATE_LIMITER: { limit } } as AppEnv['Bindings'],
+      makeEnv(limit),
     );
     expect(res.status).toBe(429);
     const body = (await res.json()) as { error: { code: string; message: string } };
@@ -47,7 +57,7 @@ describe('authLoginRateLimit', () => {
     const app = createApp();
     await app.fetch(
       new Request('http://localhost/'),
-      { AUTH_RATE_LIMITER: { limit } } as AppEnv['Bindings'],
+      makeEnv(limit),
     );
     expect(limit).toHaveBeenCalledWith({ key: 'login:unknown' });
   });
