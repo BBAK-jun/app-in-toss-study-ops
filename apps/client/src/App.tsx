@@ -7,12 +7,10 @@ import { RoundDetailPage } from './pages/RoundDetailPage';
 import { SubmissionCreatePage } from './pages/SubmissionCreatePage';
 import { ReminderPage } from './pages/ReminderPage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { LogsPage } from './pages/admin/LogsPage';
 
-// 인증 필요 라우트 래퍼 — user 가 없으면 /login 로 이동.
 function Protected({ children }: { children: React.ReactNode }) {
   const { user, loading } = useSession();
-  if (loading) return null; // 세션 복원 중에는 렌더 지연 (추후 스플래시로 대체)
+  if (loading) return null;
   return user ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
@@ -25,7 +23,6 @@ export function App() {
       <Route path="/rounds/:roundId" element={<Protected><RoundDetailPage /></Protected>} />
       <Route path="/rounds/:roundId/submit" element={<Protected><SubmissionCreatePage /></Protected>} />
       <Route path="/rounds/:roundId/reminder" element={<Protected><ReminderPage /></Protected>} />
-      <Route path="/admin/logs" element={<Protected><LogsPage /></Protected>} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
