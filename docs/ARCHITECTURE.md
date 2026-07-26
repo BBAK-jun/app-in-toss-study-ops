@@ -21,7 +21,7 @@
 
 ```
 app-intoss-study-workspace/
-├── package.json                    # npm workspaces 정의, 루트 스크립트
+├── package.json                    # pnpm workspace 정의, 루트 스크립트
 ├── tsconfig.base.json              # 공유 TS 설정 (target, strict, paths)
 ├── .gitignore                      # node_modules, .dev.vars, .wrangler, dist 등
 ├── README.md                       # 셋업/개발/배포 가이드
@@ -556,8 +556,8 @@ export default defineConfig({
     host: 'localhost',
     port: 5173,
     commands: {
-      dev: 'npm run dev',
-      build: 'npm run build',
+      dev: 'pnpm dev',
+      build: 'pnpm build',
     },
   },
   permissions: [],               // MVP: 추가 권한 최소화
@@ -846,7 +846,7 @@ VITE_API_BASE_URL=http://localhost:8787   # wrangler dev 기본 포트
 ### 최초 셋업
 ```bash
 # 루트에서
-npm install                    # 모든 워크스페이스 의존성 설치
+pnpm install                   # 모든 워크스페이스 의존성 설치
 
 # 서버 환경
 cp apps/server/.dev.vars.example apps/server/.dev.vars
@@ -877,21 +877,21 @@ npx wrangler d1 migrations apply studyops-db-prod --remote --env production
 ### 개발 서버 실행
 ```bash
 # 클라이언트 (Vite, 포트 5173)
-npm run dev -w apps/client
+pnpm dev:client
 
 # 서버 (wrangler dev, 포트 8787, 로컬 D1)
-npm run dev -w apps/server
+pnpm dev:server
 ```
 
 ### 빌드 / 타입체크
 ```bash
 # 전체 타입체크 (루트)
-npm run typecheck
+pnpm typecheck
 # = tsc -b apps/server apps/client packages/shared (또는 각 워크스페이스 tsc --noEmit)
 
 # 빌드
-npm run build -w apps/client    # Vite → dist/
-npm run build -w apps/server    # wrangler deploy --dry-run 또는 esbuild
+pnpm build:client              # Vite → dist/
+pnpm build:server              # wrangler deploy --dry-run 또는 esbuild
 ```
 
 ### 배포
@@ -905,7 +905,7 @@ npx wrangler secret put TOSS_AUTH_MODE   # 'live'로 설정 시
 npx wrangler deploy
 
 # 클라이언트는 Vite 빌드 후 apps-in-toss 업로드 (granite/vite build → dist)
-npm run build -w apps/client
+pnpm build:client
 ```
 
 ### 루트 `package.json` 스크립트 (참고)
@@ -915,13 +915,13 @@ npm run build -w apps/client
   "private": true,
   "workspaces": ["packages/*", "apps/*"],
   "scripts": {
-    "dev:client": "npm run dev -w apps/client",
-    "dev:server": "npm run dev -w apps/server",
-    "build": "npm run build -w packages/shared && npm run build -w apps/server && npm run build -w apps/client",
-    "typecheck": "tsc -b",
-    "db:generate": "npm run -w apps/server exec -- drizzle-kit generate",
-    "db:apply:local": "npm run -w apps/server exec -- wrangler d1 migrations apply studyops-db --local",
-    "db:apply:remote": "npm run -w apps/server exec -- wrangler d1 migrations apply studyops-db --remote"
+    "dev:client": "pnpm --filter studyops-client dev",
+    "dev:server": "pnpm --filter studyops-server dev",
+    "build": "pnpm --filter @studyops/shared build && pnpm --filter studyops-server build && pnpm --filter studyops-client build",
+    "typecheck": "pnpm --filter @studyops/shared typecheck && pnpm --filter studyops-server typecheck && pnpm --filter studyops-client typecheck",
+    "db:generate": "pnpm --filter studyops-server exec -- drizzle-kit generate",
+    "db:apply:local": "pnpm --filter studyops-server exec -- wrangler d1 migrations apply studyops-db --local",
+    "db:apply:remote": "pnpm --filter studyops-server exec -- wrangler d1 migrations apply studyops-db --remote"
   }
 }
 ```
@@ -941,12 +941,12 @@ npm run build -w apps/client
 - `packages/shared/**` 전체
 
 **산출물:**
-1. 루트 워크스페이스 설정 (npm workspaces, tsconfig paths로 `@studyops/shared` 별칭).
+1. 루트 워크스페이스 설정 (pnpm workspace, tsconfig paths로 `@studyops/shared` 별칭).
 2. `packages/shared/src/` 의 모든 DTO/엔티티/에러 타입 정의 (4-3의 모든 인터페이스).
 3. 루트 README에 셋업/개발/배포 요약.
 4. `.gitignore` (node_modules, dist, .wrangler, .dev.vars, .env).
 
-**완료 기준:** `npm install && npm run typecheck` 가 빈 서버/클라이언트 stub 상태에서도 통과.
+**완료 기준:** `pnpm install && pnpm typecheck` 가 빈 서버/클라이언트 stub 상태에서도 통과.
 
 ### Executor-S (서버)
 **소유 파일 (이 경로만 수정):**
@@ -980,7 +980,7 @@ npm run build -w apps/client
 
 **외부 의존:** `@studyops/shared`에서 타입 import. 서버 엔드포인트는 4-3 스펙 기준으로 목업 없이 직접 호출 (Executor-S와 동시 진행 시 임시 mock 데이터로 UI 먼저 완성 가능).
 
-**완료 기준:** `npm run dev -w apps/client` 로 모든 화면 플로우 동작 (서버 dev 모드 연결).
+**완료 기준:** `pnpm dev:client` 로 모든 화면 플로우 동작 (서버 dev 모드 연결).
 
 ### 병렬 진행 순서
 ```
@@ -1094,7 +1094,7 @@ T1 ──► 통합 테스트 (서버+클라 연결)
 ---
 
 **[Executor-X 작업 지시문]**
-> `app-intoss-study-workspace` 저장소의 루트와 `packages/shared/` 를 구축하세요. `docs/ARCHITECTURE.md`의 4-1(디렉토리 구조), 4-3(API DTO), 4-9(Executor-X 소유 파일)를 따르세요. npm workspaces 모노레포 설정(`packages/*`, `apps/*`), `tsconfig.base.json`에 `@studyops/shared` 경로 별칭, `.gitignore`, 루트 `package.json` 스크립트(dev/build/typecheck/db:*)를 작성하세요. `packages/shared/src/`에 모든 엔티티·DTO·에러 타입을 정의하고 `index.ts`에서 re-export하세요. 완료 기준: `npm install && npm run typecheck`가 통과할 것. 서버/클라이언트는 빈 stub 상태로 두고 본인이 소유한 파일만 수정하세요.
+> `app-intoss-study-workspace` 저장소의 루트와 `packages/shared/` 를 구축하세요. `docs/ARCHITECTURE.md`의 4-1(디렉토리 구조), 4-3(API DTO), 4-9(Executor-X 소유 파일)를 따르세요. pnpm workspace 모노레포 설정(`packages/*`, `apps/*`), `tsconfig.base.json`에 `@studyops/shared` 경로 별칭, `.gitignore`, 루트 `package.json` 스크립트(dev/build/typecheck/db:*)를 작성하세요. `packages/shared/src/`에 모든 엔티티·DTO·에러 타입을 정의하고 `index.ts`에서 re-export하세요. 완료 기준: `pnpm install && pnpm typecheck`가 통과할 것. 서버/클라이언트는 빈 stub 상태로 두고 본인이 소유한 파일만 수정하세요.
 
 ---
 
@@ -1104,4 +1104,4 @@ T1 ──► 통합 테스트 (서버+클라 연결)
 ---
 
 **[Executor-C 작업 지시문]**
-> `apps/client/` 를 구축하세요. `docs/ARCHITECTURE.md`의 4-5(화면/라우팅), 4-7(환경변수), 부록 A(의존성)를 따르세요. Vite + React 18 + TypeScript + `@toss/tds-mobile` + `@apps-in-toss/web-framework` 조합으로, `granite.config.ts`, `TDSMobileAITProvider`로 감싼 `main.tsx`, React Router v6 라우트 6개(로그인/스터디목록/스터디상세/회차상세/제출등록/리마인드), 각 페이지 TDS 컴포넌트 구성, `api/client.ts`(Bearer 토큰 주입 fetch 래퍼)와 도메인 API 함수, `appLogin()` 연동을 구현하세요. 세션 토큰은 `sessionStorage` 저장(토스 정책상 localStorage 금지). 완료 기준: `npm run dev -w apps/client`로 6개 화면 플로우가 동작(서버 dev 모드 연결). `@studyops/shared` 타입 import. `apps/client/**` 외 수정 금지.
+> `apps/client/` 를 구축하세요. `docs/ARCHITECTURE.md`의 4-5(화면/라우팅), 4-7(환경변수), 부록 A(의존성)를 따르세요. Vite + React 18 + TypeScript + `@toss/tds-mobile` + `@apps-in-toss/web-framework` 조합으로, `granite.config.ts`, `TDSMobileAITProvider`로 감싼 `main.tsx`, React Router v6 라우트 6개(로그인/스터디목록/스터디상세/회차상세/제출등록/리마인드), 각 페이지 TDS 컴포넌트 구성, `api/client.ts`(Bearer 토큰 주입 fetch 래퍼)와 도메인 API 함수, `appLogin()` 연동을 구현하세요. 세션 토큰은 `sessionStorage` 저장(토스 정책상 localStorage 금지). 완료 기준: `pnpm dev:client`로 6개 화면 플로우가 동작(서버 dev 모드 연결). `@studyops/shared` 타입 import. `apps/client/**` 외 수정 금지.
