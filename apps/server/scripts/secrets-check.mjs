@@ -1,5 +1,5 @@
 // secrets-check.mjs — 배포 전 필수 secrets 존재 검증 (Node ESM).
-// GitHub Actions deploy.yml 에서 `npm run secrets:check` 로 호출.
+// GitHub Actions deploy.yml 에서 `pnpm secrets:check` 로 호출.
 // wrangler secret list --env production 의 출력을 파싱해 필수 키 존재 여부 확인.
 //
 // 사용법:

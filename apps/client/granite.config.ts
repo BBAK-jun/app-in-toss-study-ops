@@ -15,8 +15,8 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 3000,
     commands: {
-      dev: 'npm run dev',
-      build: 'npm run build',
+      dev: 'pnpm run dev',
+      build: 'pnpm run build',
     },
   },
   webViewProps: {

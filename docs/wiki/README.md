@@ -10,13 +10,13 @@ HARNESS.md (§5 산출물 규약)와 함께 작동.
 ### 1. 의존성 설치 (루트에서)
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### 2. 데이터 인덱싱 (최초 1회)
 
 ```bash
-npm run wiki:index
+pnpm wiki:index
 ```
 
 `.omo/run-continuation/` 세션과 루트의 `qa-*.png`를 위키 콘텐츠로 변환.
@@ -24,7 +24,7 @@ npm run wiki:index
 ### 3. dev 서버 실행
 
 ```bash
-npm run wiki:dev
+pnpm wiki:dev
 ```
 
 http://localhost:4321 에서 위키 확인.
@@ -32,7 +32,7 @@ http://localhost:4321 에서 위키 확인.
 ### 4. 자동화 데몬 설치 (권장)
 
 ```bash
-npm run wiki:install-daemon
+pnpm wiki:install-daemon
 ```
 
 파일 변경 시 자동으로 `wiki:index`가 실행되는 백그라운드 데몬 설치. macOS 로그인 시 자동 시작.
@@ -41,14 +41,14 @@ npm run wiki:install-daemon
 
 | 명령 | 설명 |
 |---|---|
-| `npm run wiki:dev` | Astro dev 서버 (포트 4321) |
-| `npm run wiki:build` | 정적 사이트 빌드 → `dist/` |
-| `npm run wiki:preview` | 빌드 결과 미리보기 |
-| `npm run wiki:index` | 로컬 데이터(.omo 세션, QA PNG) 인덱싱 |
-| `npm run wiki:watch` | 파일 감시 모드 (포어그라운드, launchd 없이) |
-| `npm run wiki:install-daemon` | launchd 백그라운드 데몬 설치 (macOS) |
-| `npm run wiki:uninstall-daemon` | 데몬 제거 |
-| `npm run wiki:check` | Astro 타입체크 |
+| `pnpm wiki:dev` | Astro dev 서버 (포트 4321) |
+| `pnpm wiki:build` | 정적 사이트 빌드 → `dist/` |
+| `pnpm wiki:preview` | 빌드 결과 미리보기 |
+| `pnpm wiki:index` | 로컬 데이터(.omo 세션, QA PNG) 인덱싱 |
+| `pnpm wiki:watch` | 파일 감시 모드 (포어그라운드, launchd 없이) |
+| `pnpm wiki:install-daemon` | launchd 백그라운드 데몬 설치 (macOS) |
+| `pnpm wiki:uninstall-daemon` | 데몬 제거 |
+| `pnpm wiki:check` | Astro 타입체크 |
 
 ## 콘텐츠 컬렉션
 
@@ -103,14 +103,14 @@ tail -f docs/wiki/logs/watcher.out.log
 tail -f docs/wiki/logs/watcher.err.log
 
 # 완전 제거
-npm run wiki:uninstall-daemon
+pnpm wiki:uninstall-daemon
 ```
 
 ### 데몬이 안 켜질 때
 
 1. `launchctl list com.studyops.wiki-watcher` 로 상태 확인
 2. `docs/wiki/logs/watcher.err.log` 에러 확인
-3. PATH 문제 → `npm run wiki:uninstall-daemon && npm run wiki:install-daemon` (재설치)
+3. PATH 문제 → `pnpm wiki:uninstall-daemon && pnpm wiki:install-daemon` (재설치)
 4. watchexec 미설치 → `brew install watchexec`
 
 ## 디렉토리 구조
