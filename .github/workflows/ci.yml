@@ -35,8 +35,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build shared package
-        run: pnpm build:shared
+      - name: Build library packages (shared, client-sdk)
+        run: pnpm build:libs
 
       - name: Typecheck all workspaces
         run: pnpm typecheck

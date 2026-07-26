@@ -18,6 +18,7 @@
     "dev": "echo 'run pnpm dev:server and pnpm dev:client in separate terminals'",
     "build:shared": "pnpm --filter @studyops/shared build",
     "build:client-sdk": "pnpm --filter @studyops/client-sdk build",
+    "build:libs": "pnpm build:shared && pnpm build:client-sdk",
     "build:server": "pnpm --filter studyops-server build",
     "build:client": "pnpm --filter studyops-client build",
     "build": "pnpm build:shared && pnpm build:client-sdk && pnpm build:server && pnpm build:client",
