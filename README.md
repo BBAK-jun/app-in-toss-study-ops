@@ -9,7 +9,8 @@
 
 ```
 studyops-bot/
-├── package.json              # npm workspaces 루트
+├── package.json              # pnpm workspaces 루트
+├── pnpm-workspace.yaml       # 워크스페이스 매니페스트 (pnpm)
 ├── tsconfig.base.json        # 공유 TS 설정 + @studyops/shared 경로 별칭
 ├── docs/                     # PRD, 아키텍처 문서
 ├── packages/
@@ -23,7 +24,7 @@ studyops-bot/
 
 ```bash
 # 의존성 설치 (루트에서)
-npm install
+pnpm install
 
 # 서버 환경변수 파일 생성
 cp apps/server/.dev.vars.example apps/server/.dev.vars
@@ -48,15 +49,15 @@ npx wrangler d1 migrations apply studyops-db --remote   # 프로덕션 D1 적용
 ## 개발
 
 ```bash
-npm run dev:server    # wrangler dev (포트 8787, 로컬 D1)
-npm run dev:client    # Vite dev (포트 5173)
+pnpm dev:server    # wrangler dev (포트 8787, 로컬 D1)
+pnpm dev:client    # Vite dev (포트 5173)
 ```
 
 ## 빌드 / 타입체크
 
 ```bash
-npm run typecheck     # shared + server + client 각각 tsc --noEmit (병렬)
-npm run build         # shared + server + client 빌드
+pnpm typecheck     # shared + server + client 각각 tsc --noEmit (병렬)
+pnpm build         # shared + server + client 빌드
 ```
 
 ## 배포
@@ -70,20 +71,20 @@ npx wrangler secret put TOSS_AUTH_MODE    # live 설정 시
 npx wrangler deploy                        # 서버 배포
 
 # 클라이언트
-npm run build -w apps/client               # Vite 빌드 → dist/ (앱인토스 업로드)
+pnpm build:client                          # Vite 빌드 → dist/ (앱인토스 업로드)
 ```
 
 ## 루트 스크립트
 
 | 스크립트 | 설명 |
 |---|---|
-| `npm run dev:client` | 클라이언트 개발 서버 (Vite, 포트 5173) |
-| `npm run dev:server` | 서버 개발 서버 (wrangler dev, 포트 8787) |
-| `npm run build` | 전체 워크스페이스 빌드 |
-| `npm run typecheck` | 전체 타입체크 (shared/server/client 각 `tsc --noEmit`) |
-| `npm run db:generate` | Drizzle 마이그레이션 SQL 생성 |
-| `npm run db:apply:local` | 로컬 D1에 마이그레이션 적용 |
-| `npm run db:apply:remote` | 프로덕션 D1에 마이그레이션 적용 |
+| `pnpm dev:client` | 클라이언트 개발 서버 (Vite, 포트 5173) |
+| `pnpm dev:server` | 서버 개발 서버 (wrangler dev, 포트 8787) |
+| `pnpm build` | 전체 워크스페이스 빌드 |
+| `pnpm typecheck` | 전체 타입체크 (shared/server/client 각 `tsc --noEmit`) |
+| `pnpm db:generate` | Drizzle 마이그레이션 SQL 생성 |
+| `pnpm db:apply:dev` | 로컬 D1에 마이그레이션 적용 |
+| `pnpm db:apply:prod` | 프로덕션 D1에 마이그레이션 적용 |
 
 ## 환경변수
 

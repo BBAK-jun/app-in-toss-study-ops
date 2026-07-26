@@ -34,20 +34,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 24
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build shared package
-        run: npm run build:shared
+        run: pnpm build:shared
 
       - name: Typecheck
-        run: npm run typecheck
+        run: pnpm typecheck
 
       - name: Pre-deploy secrets check
         working-directory: apps/server
@@ -60,9 +64,9 @@ jobs:
         working-directory: apps/server
         run: |
           if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            npm run deploy:production
+            pnpm run deploy:production
           else
-            npm run deploy
+            pnpm run deploy
           fi
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -9,8 +9,8 @@
 #   4. launchctl load (지금 즉시 시작)
 #
 # 사용:
-#   npm run wiki:install-daemon      # 루트에서
-#   ./scripts/install-daemon.sh      # docs/wiki 안에서 직접
+#   pnpm wiki:install-daemon           # 루트에서
+#   ./scripts/install-daemon.sh        # docs/wiki 안에서 직접
 #
 set -euo pipefail
 
@@ -53,11 +53,11 @@ if ! command -v node >/dev/null 2>&1; then
 fi
 echo "   ${GREEN}✓${RESET} node: $(command -v node) ($(node --version))"
 
-if ! command -v npm >/dev/null 2>&1; then
-  echo "${RED}ERROR:${RESET} npm이 없습니다." >&2
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "${RED}ERROR:${RESET} pnpm이 없습니다." >&2
   exit 1
 fi
-echo "   ${GREEN}✓${RESET} npm: $(command -v npm)"
+echo "   ${GREEN}✓${RESET} pnpm: $(command -v pnpm)"
 
 # ─── 2. 로그 디렉토리 ───────────────────────────────────────────────────────
 echo ""
@@ -66,7 +66,7 @@ mkdir -p "$WIKI_ROOT/logs"
 echo "   ${GREEN}✓${RESET} $WIKI_ROOT/logs/"
 
 # ─── 3. PATH 추출 ────────────────────────────────────────────────────────────
-# watchexec, node, npm이 모두 발견된 PATH를 사용. launchd는 기본 PATH가 제한적이라 필수.
+# watchexec, node, pnpm이 모두 발견된 PATH를 사용. launchd는 기본 PATH가 제한적이라 필수.
 # 로그인 셸의 PATH를 가져오기 위해 -l 셸을 실행.
 echo ""
 echo "3️⃣  PATH 추출..."
@@ -118,7 +118,7 @@ echo "  - 로그 보기:        tail -f $WIKI_ROOT/logs/watcher.out.log"
 echo "  - 상태 확인:        launchctl list $LABEL"
 echo "  - 일시 정지:        launchctl unload $DEST"
 echo "  - 다시 시작:        launchctl load $DEST"
-echo "  - 완전 제거:        npm run wiki:uninstall-daemon"
+echo "  - 완전 제거:        pnpm wiki:uninstall-daemon"
 echo ""
 echo "이제 저장소의 위키 관련 파일(.omo 세션, HARNESS.md, qa-*.png, 위키 콘텐츠)을"
 echo "변경하면 자동으로 위키 인덱스가 갱신됩니다."

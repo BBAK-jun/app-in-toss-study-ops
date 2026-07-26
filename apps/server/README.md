@@ -33,47 +33,47 @@ npx wrangler types
 
 ```bash
 # dev 서버 시작 (wrangler dev, 포트 8787, 로컬 D1)
-npm run dev
+pnpm dev
 
 # prod preview (env.production vars 사용, 로컬 D1)
-npm run dev:prod-preview
+pnpm dev:prod-preview
 
 # 타입체크
-npm run typecheck
+pnpm typecheck
 ```
 
 ## 배포
 
 ```bash
 # dev 배포
-npm run deploy
+pnpm deploy
 
 # prod 배포 (의도적 행위 필요)
-npm run deploy:production
+pnpm deploy:production
 
 # 배포 전 secrets 검증
-npm run secrets:check
-npm run secrets:check:production
+pnpm secrets:check
+pnpm secrets:check:production
 ```
 
 ## D1 마이그레이션
 
 ```bash
 # Drizzle 마이그레이션 SQL 생성
-npm run db:generate
+pnpm db:generate
 
 # 로컬 sqlite에 적용
-npm run db:apply:local
+pnpm db:apply:local
 
 # dev remote D1에 적용
-npm run db:apply:dev
+pnpm db:apply:dev
 
 # prod remote D1에 적용 (주의 — IRREVERSIBLE)
-npm run db:apply:prod
+pnpm db:apply:prod
 
 # 마이그레이션 목록 확인
-npm run db:list-migrations:dev
-npm run db:list-migrations:prod
+pnpm db:list-migrations:dev
+pnpm db:list-migrations:prod
 ```
 
 GitHub Actions를 통한 배포는 [ADR-008](../wiki/src/content/decisions/adr-008-deploy-gates-github-actions.md) 참조.
