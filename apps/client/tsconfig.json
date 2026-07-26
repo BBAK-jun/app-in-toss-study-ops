@@ -7,7 +7,11 @@
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": false,
     "preserveSymlinks": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "@studyops/shared": ["../../packages/shared/src"],
+      "@studyops/client-sdk": ["../../packages/client-sdk/src"]
+    }
   },
   "include": ["src", "granite.config.ts"]
 }
