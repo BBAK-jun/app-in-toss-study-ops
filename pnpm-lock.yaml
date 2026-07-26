@@ -90,9 +90,6 @@ importers:
       zod:
         specifier: ^4.0.0
         version: 4.4.3
-      zod3:
-        specifier: npm:zod@^3.25.76
-        version: zod@3.25.76
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: ^0.18.8
