@@ -1,0 +1,69 @@
+# deploy.yml — 수동 배포 워크플로우 (workflow_dispatch)
+# 사용자가 Actions 탭에서 "Run workflow" → 환경(dev/production) 선택 → 배포.
+# 필수 Secrets:
+#   CLOUDFLARE_API_TOKEN  (Workers Edit 권한, D1 Edit 권한)
+#   CLOUDFLARE_ACCOUNT_ID (Cloudflare 계정 ID)
+#
+# 배포 전 secrets-check 실행 — 필수 Secrets 누락 시 스크립트가 exit 1 → 배포 중단.
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deploy target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - dev
+          - production
+
+concurrency:
+  group: deploy-${{ github.event.inputs.environment || 'dev' }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared package
+        run: npm run build:shared
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Pre-deploy secrets check
+        working-directory: apps/server
+        run: node scripts/secrets-check.mjs ${{ github.event.inputs.environment }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy with Wrangler
+        working-directory: apps/server
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            npm run deploy:production
+          else
+            npm run deploy
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
