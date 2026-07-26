@@ -7,8 +7,16 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:ait": "ait build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "deploy:dev": "ait build && ait deploy --profile dev",
+    "deploy:prod": "ait build && ait deploy --profile prod",
+    "keys:set:dev": "bash scripts/ait-keys.sh set dev",
+    "keys:set:prod": "bash scripts/ait-keys.sh set prod",
+    "keys:sync": "bash scripts/ait-keys.sh sync",
+    "keys:list": "bash scripts/ait-keys.sh list",
+    "keys:remove": "bash scripts/ait-keys.sh remove"
   },
   "dependencies": {
     "react": "^18.3.1",

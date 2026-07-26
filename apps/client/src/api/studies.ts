@@ -75,3 +75,18 @@ export function createRound(studyId: string, input: RoundCreateInput): Promise<R
 export function listRounds(studyId: string): Promise<RoundDto[]> {
   return apiFetch<RoundDto[]>(`/studies/${studyId}/rounds`);
 }
+
+export interface RoundSummary {
+  roundId: string;
+  roundNumber: number;
+  title: string;
+  dueAt: number | null;
+  submittedCount: number;
+  total: number;
+  rate: number;
+}
+
+// GET /studies/:id/rounds/status — 회차별 제출률 배치 조회.
+export function listRoundSummaries(studyId: string): Promise<RoundSummary[]> {
+  return apiFetch<RoundSummary[]>(`/studies/${studyId}/rounds/status`);
+}

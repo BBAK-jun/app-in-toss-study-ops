@@ -6,6 +6,9 @@ dist/
 build/
 *.tsbuildinfo
 
+# Apps-in-Toss build artifact (regenerate via `ait build`)
+*.ait
+
 # Cloudflare / Wrangler
 .wrangler/
 .dev.vars
