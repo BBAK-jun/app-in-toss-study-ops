@@ -5,7 +5,7 @@
 /**
  * 마감일 기반 긴급도 계산
  */
-export function getDeadlineUrgency(dueAt: string | null): { color: string; label: string; bold?: boolean } {
+export function getDeadlineUrgency(dueAt: string | number | null): { color: string; label: string; bold?: boolean } {
   if (!dueAt) {
     return { color: '#8B95A1', label: '마감일 미정' };
   }
