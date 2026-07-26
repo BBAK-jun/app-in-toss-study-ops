@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { appLogin } from '@apps-in-toss/web-framework';
 import { BottomCTA, Paragraph, Spacing, TextField } from '@toss/tds-mobile';
-import { AppShell } from '../components/AppShell';
 import { apiClient, ApiError } from '../lib/api-client';
 import { useSession } from '../hooks/useSession';
 import { APP_META } from '../constants';
 import { isDevBuild, BUILD_INFO } from '../lib/build-info';
+import { usePageLayout } from '../layout/PageLayoutContext';
 
 type DevCodeInputEvent = React.ChangeEvent<HTMLInputElement>;
 
@@ -17,6 +17,8 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [devCode, setDevCode] = useState('');
+
+  usePageLayout({ title: APP_META.displayName });
 
   const handleLogin = async () => {
     setError(null);
@@ -52,7 +54,7 @@ export function LoginPage() {
   const isDevCodeValid = devCode.startsWith('dev-') && devCode.length > 4;
 
   return (
-    <AppShell title={APP_META.displayName}>
+    <>
       <div style={{ padding: '40px 24px' }}>
         <Paragraph typography="t2" fontWeight="bold">
           스터디 제출 현황을
@@ -108,6 +110,6 @@ export function LoginPage() {
           {isDevBuild() ? '로그인하기 (개발 모드)' : '토스로 로그인하기'}
         </BottomCTA>
       </div>
-    </AppShell>
+    </>
   );
 }
