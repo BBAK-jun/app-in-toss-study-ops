@@ -32,7 +32,10 @@
     "head_sampling_rate": 1
   },
 
-  // MCP server Durable Object — read-only tools for Sisyphus agent. See ADR-010.
+  // Daily log retention cron — ADR-011. Runs at 03:00 UTC (12:00 KST).
+  "triggers": {
+    "crons": ["0 3 * * *"]
+  },
   "durable_objects": {
     "bindings": [
       { "name": "STUDYOPS_MCP", "class_name": "StudyOpsMcpAgent" }
@@ -71,11 +74,16 @@
         "head_sampling_rate": 1
       },
 
-      // MCP DO binding — inherited from top-level durable_objects/migrations. See ADR-010.
+      // MCP DO binding — read-only tools for Sisyphus agent. See ADR-010.
       "durable_objects": {
         "bindings": [
           { "name": "STUDYOPS_MCP", "class_name": "StudyOpsMcpAgent" }
         ]
+      },
+
+      // Daily log retention cron — ADR-011. Inherited from top-level triggers.
+      "triggers": {
+        "crons": ["0 3 * * *"]
       }
     }
   }

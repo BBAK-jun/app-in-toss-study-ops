@@ -8,3 +8,7 @@ export type * from './rounds';
 export type * from './participants';
 export type * from './submissions';
 export type * from './errors';
+
+// logs.ts는 LOG_EVENTS 등 runtime const를 포함하므로 value export(`export *`) 사용.
+// 다른 모듈은 타입 전용이라 `export type *`. ADR-011.
+export * from './logs';

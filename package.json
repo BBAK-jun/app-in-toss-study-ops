@@ -34,9 +34,14 @@
     "wiki:preview": "npm run preview -w docs/wiki",
     "wiki:watch": "npm run watch -w docs/wiki",
     "wiki:install-daemon": "npm run install-daemon -w docs/wiki",
-    "wiki:uninstall-daemon": "npm run uninstall-daemon -w docs/wiki"
+    "wiki:uninstall-daemon": "npm run uninstall-daemon -w docs/wiki",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
   },
   "devDependencies": {
-    "typescript": "^5.6.0"
+    "fake-indexeddb": "^5.0.2",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.9"
   }
 }
