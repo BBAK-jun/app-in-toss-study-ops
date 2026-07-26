@@ -12,13 +12,13 @@ import {
   useToast,
 } from '@toss/tds-mobile';
 import type { StudyDto } from '@studyops/shared';
-import { AppShell } from '../components/AppShell';
+
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { ApiError } from '../api/client';
 import { createStudy, listStudies } from '../api/studies';
+import { usePageLayout } from '../layout/PageLayoutContext';
 
-// 스터디 목록 화면(문서 4-5): GET /studies + BottomCTA(스터디 만들기 → Modal).
 export function StudiesPage() {
   const navigate = useNavigate();
   const { openToast } = useToast();
@@ -38,6 +38,8 @@ export function StudiesPage() {
       setError(e instanceof ApiError ? e.message : '스터디를 불러오지 못했어요.');
     }
   }, []);
+
+  usePageLayout({ onRefresh: refresh });
 
   useEffect(() => {
     refresh();
@@ -61,49 +63,37 @@ export function StudiesPage() {
   };
 
   return (
-    <AppShell
-      title="내 스터디"
-      right={
-        <Button variant="weak" size="small" onClick={refresh}>
-          새로고침
-        </Button>
-      }
-    >
-      <ErrorBoundary>
-        {error ? (
-          <div style={{ padding: '24px' }}>
-            <Paragraph typography="t6" color="#EF4444">
-              {error}
-            </Paragraph>
-            <Spacing size={8} />
-            <Button size="small" onClick={refresh}>
-              다시 불러오기
-            </Button>
-          </div>
-        ) : null}
+    <ErrorBoundary>
+      {error ? (
+        <div style={{ padding: '24px' }}>
+          <Paragraph typography="t6" color="#EF4444">
+            {error}
+          </Paragraph>
+          <Spacing size={8} />
+          <Button size="small" onClick={refresh}>
+            다시 불러오기
+          </Button>
+        </div>
+      ) : null}
 
-        {!error && studies !== null ? (
-          studies.length === 0 ? (
-            <EmptyState
-              title="아직 스터디가 없어요"
-              description="첫 스터디를 만들어 시작해보세요."
-            />
-          ) : (
-            <>
-              <ListHeader title="스터디 목록" />
-              <List items={studies} onSelect={(s) => navigate(`/studies/${s.id}`)} />
-            </>
-          )
-        ) : null}
+      {!error && studies !== null ? (
+        studies.length === 0 ? (
+          <EmptyState title="아직 스터디가 없어요" description="첫 스터디를 만들어 시작해보세요." />
+        ) : (
+          <>
+            <ListHeader title="스터디 목록" />
+            <List items={studies} onSelect={(s) => navigate(`/studies/${s.id}`)} />
+          </>
+        )
+      ) : null}
 
-        {!error && studies === null ? (
-          <div style={{ padding: 24 }}>
-            <Paragraph typography="t6" color="#8B95A1">
-              불러오는 중…
-            </Paragraph>
-          </div>
-        ) : null}
-      </ErrorBoundary>
+      {!error && studies === null ? (
+        <div style={{ padding: 24 }}>
+          <Paragraph typography="t6" color="#8B95A1">
+            불러오는 중…
+          </Paragraph>
+        </div>
+      ) : null}
 
       <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '0 16px env(safe-area-inset-bottom)' }}>
         <BottomCTA onClick={() => setCreateOpen(true)}>스터디 만들기</BottomCTA>
@@ -144,7 +134,7 @@ export function StudiesPage() {
           </div>
         </Modal.Content>
       </Modal>
-    </AppShell>
+    </ErrorBoundary>
   );
 }
 

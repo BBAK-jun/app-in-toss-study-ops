@@ -2,14 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { appLogin } from '@apps-in-toss/web-framework';
 import { BottomCTA, Paragraph, Spacing } from '@toss/tds-mobile';
-import { AppShell } from '../components/AppShell';
-import { login } from '../api/auth';
-import { setToken } from '../api/client';
-import { ApiError } from '../api/client';
-import { useSession } from '../hooks/useSession';
-import { APP_META } from '../constants';
 
-// 로그인 화면(문서 4-5): appLogin() → /auth/login → 메인 이동.
+import { login } from '../api/auth';
+import { setToken, ApiError } from '../api/client';
+import { useSession } from '../hooks/useSession';
+
 export function LoginPage() {
   const navigate = useNavigate();
   const { setUser } = useSession();
@@ -20,14 +17,10 @@ export function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      // 1. 토스 인증으로 인가코드 획득
       const { authorizationCode, referrer } = await appLogin();
-      // 2. 서버에서 세션 토큰 발급
       const { sessionToken, user } = await login(authorizationCode, referrer);
-      // 3. 토큰은 sessionStorage, user 는 메모리(문서 4-4)
       setToken(sessionToken);
       setUser(user);
-      // 4. 메인으로 이동
       navigate('/', { replace: true });
     } catch (e) {
       if (e instanceof ApiError) {
@@ -41,7 +34,7 @@ export function LoginPage() {
   };
 
   return (
-    <AppShell title={APP_META.displayName}>
+    <>
       <div style={{ padding: '40px 24px' }}>
         <Paragraph typography="t2" fontWeight="bold">
           스터디 제출 현황을
@@ -68,6 +61,6 @@ export function LoginPage() {
           토스로 로그인하기
         </BottomCTA>
       </div>
-    </AppShell>
+    </>
   );
 }

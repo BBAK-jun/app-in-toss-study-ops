@@ -13,7 +13,7 @@ import {
   useToast,
 } from '@toss/tds-mobile';
 import type { ParticipantDto, RoundDto, StudyDto } from '@studyops/shared';
-import { AppShell } from '../components/AppShell';
+
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { ApiError } from '../api/client';
@@ -26,10 +26,10 @@ import {
   removeParticipant,
   updateStudy,
 } from '../api/studies';
+import { usePageLayout } from '../layout/PageLayoutContext';
 
 type TabValue = 'rounds' | 'participants';
 
-// 스터디 상세(문서 4-5): Tab(회차/참여자) + 회차 생성 + 참여자 추가 + Discord webhook 설정.
 export function StudyDetailPage() {
   const { studyId = '' } = useParams();
   const navigate = useNavigate();
@@ -41,20 +41,17 @@ export function StudyDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<TabValue>('rounds');
 
-  // 회차 생성 Modal
   const [roundOpen, setRoundOpen] = useState(false);
   const [roundTitle, setRoundTitle] = useState('');
   const [roundNumber, setRoundNumber] = useState('1');
   const [roundDueAt, setRoundDueAt] = useState('');
   const [roundSubmitting, setRoundSubmitting] = useState(false);
 
-  // 참여자 추가 Modal
   const [participantOpen, setParticipantOpen] = useState(false);
   const [pName, setPName] = useState('');
   const [pHandle, setPHandle] = useState('');
   const [pSubmitting, setPSubmitting] = useState(false);
 
-  // Discord webhook 설정 Modal
   const [webhookOpen, setWebhookOpen] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState('');
 
@@ -74,6 +71,8 @@ export function StudyDetailPage() {
       setError(e instanceof ApiError ? e.message : '스터디 정보를 불러오지 못했어요.');
     }
   }, [studyId]);
+
+  usePageLayout({ title: study?.title ?? '스터디', onRefresh: refresh });
 
   useEffect(() => {
     refresh();
@@ -148,235 +147,222 @@ export function StudyDetailPage() {
   };
 
   return (
-    <AppShell title={study?.title ?? '스터디'} onBack={() => navigate('/')}>
-      <ErrorBoundary>
-        {error ? (
-          <div style={{ padding: 24 }}>
-            <Paragraph typography="t6" color="#EF4444">
-              {error}
-            </Paragraph>
-          </div>
-        ) : null}
-
-        <div style={{ padding: '12px 16px' }}>
-          <SegmentedControl value={tab} onChange={(v) => setTab(v as TabValue)} size="large">
-            <SegmentedControl.Item value="rounds">회차</SegmentedControl.Item>
-            <SegmentedControl.Item value="participants">참여자</SegmentedControl.Item>
-          </SegmentedControl>
+    <ErrorBoundary>
+      {error ? (
+        <div style={{ padding: 24 }}>
+          <Paragraph typography="t6" color="#EF4444">
+            {error}
+          </Paragraph>
         </div>
+      ) : null}
 
-        {tab === 'rounds' ? (
-          <>
-            <ListHeader
-              title="회차"
-              right={
-                <Button variant="weak" size="small" onClick={() => setWebhookOpen(true)}>
-                  Discord 설정
-                </Button>
-              }
-            />
-            {rounds && rounds.length === 0 ? (
-              <EmptyState
-                title="아직 회차가 없어요"
-                description="첫 회차를 만들어 제출을 받아보세요."
-              />
-            ) : null}
-            {rounds ? (
-              <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                {rounds.map((r) => (
-                  <ListRow
-                    key={r.id}
-                    verticalPadding="large"
-                    arrowType="right"
-                    withTouchEffect
-                    onClick={() => navigate(`/rounds/${r.id}`)}
-                    contents={
-                      <>
-                        <Paragraph typography="t5" fontWeight="medium">
-                          {r.roundNumber}회차 · {r.title}
-                        </Paragraph>
-                        {r.dueAt ? (
-                          <>
-                            <Spacing size={4} />
-                            <Paragraph typography="t7" color="#8B95A1">
-                              마감 {new Date(r.dueAt).toLocaleString('ko-KR')}
-                            </Paragraph>
-                          </>
-                        ) : null}
-                      </>
-                    }
-                  />
-                ))}
-              </ul>
-            ) : null}
-          </>
-        ) : (
-          <>
-            <ListHeader title={`참여자${participants ? ` (${participants.length})` : ''}`} />
-            {participants && participants.length === 0 ? (
-              <EmptyState
-                title="아직 참여자가 없어요"
-                description="스터디 멤버를 추가해보세요."
-              />
-            ) : null}
-            {participants ? (
-              <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                {participants.map((p) => (
-                  <ListRow
-                    key={p.id}
-                    verticalPadding="large"
-                    contents={
+      <div style={{ padding: '12px 16px' }}>
+        <SegmentedControl value={tab} onChange={(v) => setTab(v as TabValue)} size="large">
+          <SegmentedControl.Item value="rounds">회차</SegmentedControl.Item>
+          <SegmentedControl.Item value="participants">참여자</SegmentedControl.Item>
+        </SegmentedControl>
+      </div>
+
+      {tab === 'rounds' ? (
+        <>
+          <ListHeader
+            title="회차"
+            right={
+              <Button variant="weak" size="small" onClick={() => setWebhookOpen(true)}>
+                Discord 설정
+              </Button>
+            }
+          />
+          {rounds && rounds.length === 0 ? (
+            <EmptyState title="아직 회차가 없어요" description="첫 회차를 만들어 제출을 받아보세요." />
+          ) : null}
+          {rounds ? (
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              {rounds.map((r) => (
+                <ListRow
+                  key={r.id}
+                  verticalPadding="large"
+                  arrowType="right"
+                  withTouchEffect
+                  onClick={() => navigate(`/rounds/${r.id}`)}
+                  contents={
+                    <>
                       <Paragraph typography="t5" fontWeight="medium">
-                        {p.name}
-                        {p.discordHandle ? (
-                          <span style={{ color: '#8B95A1' }}> · {p.discordHandle}</span>
-                        ) : null}
+                        {r.roundNumber}회차 · {r.title}
                       </Paragraph>
-                    }
-                    right={
-                      <Button variant="weak" size="small" onClick={() => handleRemoveParticipant(p.id)}>
-                        삭제
-                      </Button>
-                    }
-                  />
-                ))}
-              </ul>
-            ) : null}
-          </>
+                      {r.dueAt ? (
+                        <>
+                          <Spacing size={4} />
+                          <Paragraph typography="t7" color="#8B95A1">
+                            마감 {new Date(r.dueAt).toLocaleString('ko-KR')}
+                          </Paragraph>
+                        </>
+                      ) : null}
+                    </>
+                  }
+                />
+              ))}
+            </ul>
+          ) : null}
+        </>
+      ) : (
+        <>
+          <ListHeader title={`참여자${participants ? ` (${participants.length})` : ''}`} />
+          {participants && participants.length === 0 ? (
+            <EmptyState title="아직 참여자가 없어요" description="스터디 멤버를 추가해보세요." />
+          ) : null}
+          {participants ? (
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              {participants.map((p) => (
+                <ListRow
+                  key={p.id}
+                  verticalPadding="large"
+                  contents={
+                    <Paragraph typography="t5" fontWeight="medium">
+                      {p.name}
+                      {p.discordHandle ? <span style={{ color: '#8B95A1' }}> · {p.discordHandle}</span> : null}
+                    </Paragraph>
+                  }
+                  right={
+                    <Button variant="weak" size="small" onClick={() => handleRemoveParticipant(p.id)}>
+                      삭제
+                    </Button>
+                  }
+                />
+              ))}
+            </ul>
+          ) : null}
+        </>
+      )}
+
+      <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '0 16px env(safe-area-inset-bottom)' }}>
+        {tab === 'rounds' ? (
+          <BottomCTA
+            onClick={() => {
+              const next = (rounds?.length ?? 0) + 1;
+              setRoundNumber(String(next));
+              setRoundOpen(true);
+            }}
+          >
+            회차 만들기
+          </BottomCTA>
+        ) : (
+          <BottomCTA onClick={() => setParticipantOpen(true)}>참여자 추가하기</BottomCTA>
         )}
+      </div>
 
-        <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '0 16px env(safe-area-inset-bottom)' }}>
-          {tab === 'rounds' ? (
-            <BottomCTA
-              onClick={() => {
-                const next = (rounds?.length ?? 0) + 1;
-                setRoundNumber(String(next));
-                setRoundOpen(true);
-              }}
-            >
+      <Modal open={roundOpen} onOpenChange={setRoundOpen}>
+        <Modal.Overlay />
+        <Modal.Content>
+          <div style={{ padding: 24 }}>
+            <Paragraph typography="t4" fontWeight="bold">
               회차 만들기
-            </BottomCTA>
-          ) : (
-            <BottomCTA onClick={() => setParticipantOpen(true)}>참여자 추가하기</BottomCTA>
-          )}
-        </div>
-
-        {/* 회차 생성 Modal */}
-        <Modal open={roundOpen} onOpenChange={setRoundOpen}>
-          <Modal.Overlay />
-          <Modal.Content>
-            <div style={{ padding: 24 }}>
-              <Paragraph typography="t4" fontWeight="bold">
-                회차 만들기
-              </Paragraph>
-              <Spacing size={20} />
-              <TextField
-                variant="box"
-                label="회차 번호"
-                type="number"
-                inputMode="numeric"
-                value={roundNumber}
-                onChange={(e) => setRoundNumber(e.target.value)}
-              />
-              <Spacing size={12} />
-              <TextField
-                variant="box"
-                label="회차 제목"
-                placeholder="예: 이분탐색"
-                value={roundTitle}
-                onChange={(e) => setRoundTitle(e.target.value)}
-              />
-              <Spacing size={12} />
-              <TextField
-                variant="box"
-                label="마감일(선택)"
-                type="datetime-local"
-                value={roundDueAt}
-                onChange={(e) => setRoundDueAt(e.target.value)}
-              />
-              <Spacing size={20} />
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Button variant="weak" display="block" onClick={() => setRoundOpen(false)}>
-                  취소
-                </Button>
-                <Button display="block" loading={roundSubmitting} onClick={handleCreateRound}>
-                  만들기
-                </Button>
-              </div>
+            </Paragraph>
+            <Spacing size={20} />
+            <TextField
+              variant="box"
+              label="회차 번호"
+              type="number"
+              inputMode="numeric"
+              value={roundNumber}
+              onChange={(e) => setRoundNumber(e.target.value)}
+            />
+            <Spacing size={12} />
+            <TextField
+              variant="box"
+              label="회차 제목"
+              placeholder="예: 이분탐색"
+              value={roundTitle}
+              onChange={(e) => setRoundTitle(e.target.value)}
+            />
+            <Spacing size={12} />
+            <TextField
+              variant="box"
+              label="마감일(선택)"
+              type="datetime-local"
+              value={roundDueAt}
+              onChange={(e) => setRoundDueAt(e.target.value)}
+            />
+            <Spacing size={20} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button variant="weak" display="block" onClick={() => setRoundOpen(false)}>
+                취소
+              </Button>
+              <Button display="block" loading={roundSubmitting} onClick={handleCreateRound}>
+                만들기
+              </Button>
             </div>
-          </Modal.Content>
-        </Modal>
+          </div>
+        </Modal.Content>
+      </Modal>
 
-        {/* 참여자 추가 Modal */}
-        <Modal open={participantOpen} onOpenChange={setParticipantOpen}>
-          <Modal.Overlay />
-          <Modal.Content>
-            <div style={{ padding: 24 }}>
-              <Paragraph typography="t4" fontWeight="bold">
-                참여자 추가
-              </Paragraph>
-              <Spacing size={20} />
-              <TextField
-                variant="box"
-                label="이름"
-                placeholder="참여자 이름"
-                value={pName}
-                onChange={(e) => setPName(e.target.value)}
-              />
-              <Spacing size={12} />
-              <TextField
-                variant="box"
-                label="Discord 핸들(선택)"
-                placeholder="예: @sondi"
-                value={pHandle}
-                onChange={(e) => setPHandle(e.target.value)}
-              />
-              <Spacing size={20} />
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Button variant="weak" display="block" onClick={() => setParticipantOpen(false)}>
-                  취소
-                </Button>
-                <Button display="block" loading={pSubmitting} onClick={handleAddParticipant}>
-                  추가하기
-                </Button>
-              </div>
+      <Modal open={participantOpen} onOpenChange={setParticipantOpen}>
+        <Modal.Overlay />
+        <Modal.Content>
+          <div style={{ padding: 24 }}>
+            <Paragraph typography="t4" fontWeight="bold">
+              참여자 추가
+            </Paragraph>
+            <Spacing size={20} />
+            <TextField
+              variant="box"
+              label="이름"
+              placeholder="참여자 이름"
+              value={pName}
+              onChange={(e) => setPName(e.target.value)}
+            />
+            <Spacing size={12} />
+            <TextField
+              variant="box"
+              label="Discord 핸들(선택)"
+              placeholder="예: @sondi"
+              value={pHandle}
+              onChange={(e) => setPHandle(e.target.value)}
+            />
+            <Spacing size={20} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button variant="weak" display="block" onClick={() => setParticipantOpen(false)}>
+                취소
+              </Button>
+              <Button display="block" loading={pSubmitting} onClick={handleAddParticipant}>
+                추가하기
+              </Button>
             </div>
-          </Modal.Content>
-        </Modal>
+          </div>
+        </Modal.Content>
+      </Modal>
 
-        {/* Discord webhook 설정 Modal */}
-        <Modal open={webhookOpen} onOpenChange={setWebhookOpen}>
-          <Modal.Overlay />
-          <Modal.Content>
-            <div style={{ padding: 24 }}>
-              <Paragraph typography="t4" fontWeight="bold">
-                Discord 알림 설정
-              </Paragraph>
-              <Spacing size={8} />
-              <Paragraph typography="t6" color="#8B95A1">
-                스터디 전용 Discord webhook URL을 등록하면 리마인드/현황을 바로 보낼 수 있어요.
-              </Paragraph>
-              <Spacing size={20} />
-              <TextField
-                variant="box"
-                label="Webhook URL"
-                placeholder="https://discord.com/api/webhooks/..."
-                value={webhookUrl}
-                onChange={(e) => setWebhookUrl(e.target.value)}
-              />
-              <Spacing size={20} />
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Button variant="weak" display="block" onClick={() => setWebhookOpen(false)}>
-                  취소
-                </Button>
-                <Button display="block" loading={roundSubmitting} onClick={handleSaveWebhook}>
-                  저장하기
-                </Button>
-              </div>
+      <Modal open={webhookOpen} onOpenChange={setWebhookOpen}>
+        <Modal.Overlay />
+        <Modal.Content>
+          <div style={{ padding: 24 }}>
+            <Paragraph typography="t4" fontWeight="bold">
+              Discord 알림 설정
+            </Paragraph>
+            <Spacing size={8} />
+            <Paragraph typography="t6" color="#8B95A1">
+              스터디 전용 Discord webhook URL을 등록하면 리마인드/현황을 바로 보낼 수 있어요.
+            </Paragraph>
+            <Spacing size={20} />
+            <TextField
+              variant="box"
+              label="Webhook URL"
+              placeholder="https://discord.com/api/webhooks/..."
+              value={webhookUrl}
+              onChange={(e) => setWebhookUrl(e.target.value)}
+            />
+            <Spacing size={20} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button variant="weak" display="block" onClick={() => setWebhookOpen(false)}>
+                취소
+              </Button>
+              <Button display="block" loading={roundSubmitting} onClick={handleSaveWebhook}>
+                저장하기
+              </Button>
             </div>
-          </Modal.Content>
-        </Modal>
-      </ErrorBoundary>
-    </AppShell>
+          </div>
+        </Modal.Content>
+      </Modal>
+    </ErrorBoundary>
   );
 }
