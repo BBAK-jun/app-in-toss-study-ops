@@ -59,3 +59,33 @@ export const submissions = sqliteTable(
 
 // FK 조회 성능용 일반 인덱스는 D1에 자동 생성되지 않으므로
 // 마이그레이션 SQL(src/db/migrations/*.sql)에서 CREATE INDEX 로 관리.
+
+// ─── logs ─────────────────────────────────────────────────────────────────
+// ADR-011. 서버/클라이언트 양쪽 로그의 영속 저장소(Tier 2).
+// 인덱스 전략: ts(기본 정렬), level+ts(레벨별 조회), event+ts(이벤트 필터),
+// user_id+ts(사용자별 추적), session_id(세션 추적), request_id(요청 추적).
+export const logs = sqliteTable('logs', {
+  id: integer('id').primaryKey(),
+  ts: integer('ts').notNull(),
+  level: text('level').notNull(),
+  source: text('source').notNull(),
+  event: text('event').notNull(),
+  message: text('message').notNull(),
+
+  userId: integer('user_id'),
+  sessionId: text('session_id'),
+  requestId: text('request_id'),
+
+  method: text('method'),
+  path: text('path'),
+  status: integer('status'),
+  durationMs: integer('duration_ms'),
+
+  context: text('context'),
+  stack: text('stack'),
+
+  env: text('env').notNull(),
+  version: text('version'),
+  userAgent: text('user_agent'),
+  ipHash: text('ip_hash'),
+});
