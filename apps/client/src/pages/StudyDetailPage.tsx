@@ -16,18 +16,8 @@ import type { ParticipantDto, RoundDto, StudyDto } from '@studyops/shared';
 import { AppShell } from '../components/AppShell';
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { ApiError } from '../api/client';
-import {
-  addParticipant,
-  createRound,
-  getStudy,
-  listParticipants,
-  listRounds,
-  listRoundSummaries,
-  type RoundSummary,
-  removeParticipant,
-  updateStudy,
-} from '../api/studies';
+import { apiClient, ApiError } from '../lib/api-client';
+import type { RoundSummary } from '@studyops/shared';
 import { getDeadlineUrgency, getRateColor } from '../lib/formatDate';
 
 type TabValue = 'rounds' | 'participants';
@@ -66,10 +56,10 @@ export function StudyDetailPage() {
     setError(null);
     try {
       const [s, r, rs, p] = await Promise.all([
-        getStudy(studyId),
-        listRounds(studyId),
-        listRoundSummaries(studyId),
-        listParticipants(studyId),
+        apiClient.studies.get(studyId),
+        apiClient.studies.listRounds(studyId),
+        apiClient.studies.listRoundSummaries(studyId),
+        apiClient.studies.listParticipants(studyId),
       ]);
       setStudy(s);
       setRounds(r);
@@ -90,7 +80,7 @@ export function StudyDetailPage() {
     if (!roundTitle.trim() || Number.isNaN(num)) return;
     setRoundSubmitting(true);
     try {
-      const created = await createRound(studyId, {
+      const created = await apiClient.studies.createRound(studyId, {
         roundNumber: num,
         title: roundTitle.trim(),
         dueAt: roundDueAt ? new Date(roundDueAt).getTime() : undefined,
@@ -111,7 +101,7 @@ export function StudyDetailPage() {
     if (!pName.trim()) return;
     setPSubmitting(true);
     try {
-      const created = await addParticipant(studyId, {
+      const created = await apiClient.studies.addParticipant(studyId, {
         name: pName.trim(),
         discordHandle: pHandle.trim() || undefined,
       });
@@ -129,7 +119,7 @@ export function StudyDetailPage() {
 
   const handleRemoveParticipant = async (pid: string) => {
     try {
-      await removeParticipant(studyId, pid);
+      await apiClient.studies.removeParticipant(studyId, pid);
       setParticipants((prev) => (prev ?? []).filter((p) => p.id !== pid));
       openToast('참여자를 삭제했어요.');
     } catch (e) {
@@ -140,7 +130,7 @@ export function StudyDetailPage() {
   const handleSaveWebhook = async () => {
     setRoundSubmitting(true);
     try {
-      const updated = await updateStudy(studyId, {
+      const updated = await apiClient.studies.update(studyId, {
         discordWebhookUrl: webhookUrl.trim() || null,
       });
       setStudy(updated);

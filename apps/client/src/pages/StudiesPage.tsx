@@ -15,8 +15,7 @@ import type { StudyDto } from '@studyops/shared';
 import { AppShell } from '../components/AppShell';
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { ApiError } from '../api/client';
-import { createStudy, listStudies } from '../api/studies';
+import { apiClient, ApiError } from '../lib/api-client';
 
 // 스터디 목록 화면(문서 4-5): GET /studies + BottomCTA(스터디 만들기 → Modal).
 export function StudiesPage() {
@@ -32,7 +31,7 @@ export function StudiesPage() {
   const refresh = useCallback(async () => {
     setError(null);
     try {
-      const data = await listStudies();
+      const data = await apiClient.studies.list();
       setStudies(data);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : '스터디를 불러오지 못했어요.');
@@ -47,7 +46,7 @@ export function StudiesPage() {
     if (!title.trim()) return;
     setSubmitting(true);
     try {
-      await createStudy({ title: title.trim(), description: description.trim() || undefined });
+      await apiClient.studies.create({ title: title.trim(), description: description.trim() || undefined });
       setCreateOpen(false);
       setTitle('');
       setDescription('');

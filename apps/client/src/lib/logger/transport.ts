@@ -1,4 +1,4 @@
-import { getToken } from '../../api/client';
+import { apiClient } from '../api-client';
 import { removeBatch, incrementAttempts, type QueuedLog } from './storage';
 import { isWithinMaxAttempts } from './backoff';
 import type { LogBatchPayload } from '@studyops/shared';
@@ -40,7 +40,7 @@ export async function sendBatch(
   if (entries.length === 0) return { sent: 0, failed: 0, deadLettered: 0 };
 
   const toSend = entries.slice(0, BATCH_SIZE);
-  const token = getToken();
+  const token = apiClient.getToken();
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 

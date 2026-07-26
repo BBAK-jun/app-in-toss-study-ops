@@ -1,0 +1,26 @@
+{
+  "name": "@studyops/client-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "description": "StudyOps Bot — typed API client SDK for browser/Node consumers",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@studyops/shared": "workspace:*"
+  }
+}
