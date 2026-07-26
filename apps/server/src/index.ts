@@ -4,10 +4,14 @@ import { cors } from 'hono/cors';
 import type { AppEnv } from './env';
 import { errorHandler } from './middleware/error';
 import { authMiddleware } from './middleware/auth';
+import { loggingMiddleware } from './middleware/logging';
 import { healthRoutes } from './routes/health';
 import { authRoutes } from './auth/routes';
 import { studyRoutes } from './routes/studies';
 import { roundRoutes } from './routes/rounds';
+import { logRoutes } from './routes/logs';
+import { adminLogRoutes } from './routes/admin/logs';
+import { runRetentionJob } from './scheduled';
 import { assertBootEnvironment, logBootInfo } from './boot-check';
 import { StudyOpsMcpAgent } from './mcp/server';
 
@@ -31,6 +35,7 @@ app.use('*', cors({
   allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   maxAge: 86400,
 }));
+app.use('*', loggingMiddleware);
 app.onError(errorHandler);
 
 app.route('/', healthRoutes);
@@ -40,6 +45,8 @@ const protectedApi = new Hono<AppEnv>();
 protectedApi.use('*', authMiddleware);
 protectedApi.route('/studies', studyRoutes);
 protectedApi.route('/rounds', roundRoutes);
+protectedApi.route('/logs', logRoutes);
+protectedApi.route('/admin/logs', adminLogRoutes);
 
 app.route('/', protectedApi);
 
@@ -65,5 +72,14 @@ export default {
     }
 
     return app.fetch(request, env, ctx);
+  },
+
+  async scheduled(
+    _controller: ScheduledController,
+    env: AppEnv['Bindings'],
+    ctx: ExecutionContext,
+  ): Promise<void> {
+    ensureBoot(env);
+    ctx.waitUntil(runRetentionJob(env));
   },
 };

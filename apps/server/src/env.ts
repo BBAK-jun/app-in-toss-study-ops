@@ -23,5 +23,6 @@ export type AppEnv = {
   Bindings: Env & SecretBindings;
   Variables: {
     user: { userKey: number };
+    requestId: string;
   };
 };
