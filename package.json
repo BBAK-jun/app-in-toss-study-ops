@@ -20,6 +20,8 @@
     "typecheck:server": "npm run typecheck -w apps/server",
     "typecheck:client": "npm run typecheck -w apps/client",
     "typecheck": "npm run typecheck:shared && npm run typecheck:server && npm run typecheck:client",
+    "test:server": "npm run test -w apps/server",
+    "test": "npm run test:server",
     "types:server": "npm run types -w apps/server",
     "deploy": "npm run deploy -w apps/server",
     "deploy:production": "npm run deploy:production -w apps/server",
