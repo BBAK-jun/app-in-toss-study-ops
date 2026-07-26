@@ -17,9 +17,12 @@ vi.mock('../lib/logger', () => ({
 
 import { log } from '../lib/logger';
 import { loggingMiddleware } from './logging';
+import { requestIdMiddleware } from './request-id';
+import type { AppEnv } from '../env';
 
-function createApp(): Hono {
-  const app = new Hono();
+function createApp(): Hono<AppEnv> {
+  const app = new Hono<AppEnv>();
+  app.use('*', requestIdMiddleware);
   app.use('*', loggingMiddleware);
   app.get('/ok', (c) => c.json({ ok: true }));
   app.get('/not-found', (c) => c.json({ error: 'no' }, 404));
