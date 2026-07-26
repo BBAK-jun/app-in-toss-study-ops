@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   BottomCTA,
@@ -10,60 +10,52 @@ import {
   TextField,
   useToast,
 } from '@toss/tds-mobile';
-import type { ParticipantDto } from '@studyops/shared';
 
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { ApiError } from '../api/client';
 import { listParticipants } from '../api/studies';
-import { createSubmission, getRoundStatus } from '../api/rounds';
+import { useRoundStatusQuery, useCreateSubmissionMutation } from '../query/roundQueries';
+import { useQuery } from '@tanstack/react-query';
+import { studyKeys } from '../query/queryKeys';
 
 export function SubmissionCreatePage() {
   const { roundId = '' } = useParams();
   const navigate = useNavigate();
   const { openToast } = useToast();
 
-  const [participants, setParticipants] = useState<ParticipantDto[] | null>(null);
-  const [submittedIds, setSubmittedIds] = useState<Set<string>>(new Set());
+  const { data: status, isLoading: statusLoading, error: statusError } = useRoundStatusQuery(roundId);
+
+  const studyId =
+    status?.submitted[0]?.participant.studyId ?? status?.notSubmitted[0]?.studyId ?? '';
+
+  const { data: participants } = useQuery({
+    queryKey: studyKeys.participants(studyId),
+    queryFn: () => listParticipants(studyId),
+    enabled: studyId !== '',
+  });
+
+  const createSubmissionMutation = useCreateSubmissionMutation(roundId, studyId);
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [url, setUrl] = useState('');
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      setError(null);
-      try {
-        const status = await getRoundStatus(roundId);
-        if (!active) return;
-        const studyId =
-          status.submitted[0]?.participant.studyId ?? status.notSubmitted[0]?.studyId ?? '';
-        setSubmittedIds(new Set(status.submitted.map((s) => s.participant.id)));
-        if (studyId) {
-          const all = await listParticipants(studyId);
-          if (active) setParticipants(all);
-        } else {
-          if (active) setParticipants([]);
-        }
-      } catch (e) {
-        if (active) setError(e instanceof ApiError ? e.message : '정보를 불러오지 못했어요.');
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [roundId]);
-
+  const submittedIds = new Set(status?.submitted.map((s) => s.participant.id) ?? []);
   const selectable = (participants ?? []).filter((p) => !submittedIds.has(p.id));
+
+  const errorMessage = statusError instanceof ApiError
+    ? statusError.message
+    : statusError
+      ? '정보를 불러오지 못했어요.'
+      : error;
 
   const handleSubmit = async () => {
     if (!selectedId || !url.trim()) return;
-    setSubmitting(true);
     setError(null);
     try {
-      await createSubmission(roundId, {
+      await createSubmissionMutation.mutateAsync({
         participantId: selectedId,
         url: url.trim(),
         note: note.trim() || undefined,
@@ -77,23 +69,21 @@ export function SubmissionCreatePage() {
       } else {
         setError(e instanceof ApiError ? e.message : '제출 등록에 실패했어요.');
       }
-    } finally {
-      setSubmitting(false);
     }
   };
 
   return (
     <ErrorBoundary>
-      {error ? (
+      {errorMessage ? (
         <div style={{ padding: 24 }}>
           <Paragraph typography="t6" color="#EF4444">
-            {error}
+            {errorMessage}
           </Paragraph>
         </div>
       ) : null}
 
       <ListHeader title="참여자 선택" />
-      {!participants ? (
+      {statusLoading ? (
         <div style={{ padding: 24 }}>
           <Paragraph typography="t6" color="#8B95A1">
             불러오는 중…
@@ -150,7 +140,11 @@ export function SubmissionCreatePage() {
       </div>
 
       <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '0 16px env(safe-area-inset-bottom)' }}>
-        <BottomCTA loading={submitting} disabled={!selectedId || !url.trim() || !isValidUrl(url)} onClick={handleSubmit}>
+        <BottomCTA
+          loading={createSubmissionMutation.isPending}
+          disabled={!selectedId || !url.trim() || !isValidUrl(url)}
+          onClick={handleSubmit}
+        >
           제출하기
         </BottomCTA>
       </div>

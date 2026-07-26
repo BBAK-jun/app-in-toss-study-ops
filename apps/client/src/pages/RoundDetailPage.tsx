@@ -1,50 +1,48 @@
-import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BottomCTA, Button, ListHeader, ListRow, Paragraph, Spacing } from '@toss/tds-mobile';
-import type { RoundStatusDto } from '@studyops/shared';
 
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { RateBadge, rateBadgeColor } from '../components/RateBadge';
 import { ApiError } from '../api/client';
-import { getRoundStatus } from '../api/rounds';
+import { useRoundStatusQuery } from '../query/roundQueries';
 import { usePageLayout } from '../layout/PageLayoutContext';
 
 export function RoundDetailPage() {
   const { roundId = '' } = useParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<RoundStatusDto | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const refresh = useCallback(async () => {
-    setError(null);
-    try {
-      setStatus(await getRoundStatus(roundId));
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : '회차 현황을 불러오지 못했어요.');
-    }
-  }, [roundId]);
+  const { data: status, isLoading, error, refetch } = useRoundStatusQuery(roundId);
 
   usePageLayout({
     title: status ? `${status.roundNumber}회차` : '회차',
-    onRefresh: refresh,
+    onRefresh: () => { void refetch(); },
   });
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  const errorMessage = error instanceof ApiError ? error.message : error ? '회차 현황을 불러오지 못했어요.' : null;
 
   const submittedCount = status?.submitted.length ?? 0;
   const total = status?.total ?? 0;
   const rate = status?.rate ?? 0;
   const accentColor = rateBadgeColor(rate);
 
+  if (isLoading && !status) {
+    return (
+      <ErrorBoundary>
+        <div style={{ padding: 24 }}>
+          <Paragraph typography="t6" color="#8B95A1">
+            불러오는 중…
+          </Paragraph>
+        </div>
+      </ErrorBoundary>
+    );
+  }
+
   return (
     <ErrorBoundary>
-      {error ? (
+      {errorMessage ? (
         <div style={{ padding: 24 }}>
           <Paragraph typography="t6" color="#EF4444">
-            {error}
+            {errorMessage}
           </Paragraph>
         </div>
       ) : null}

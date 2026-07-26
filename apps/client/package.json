@@ -22,8 +22,10 @@
     "@apps-in-toss/web-framework": "^2.10.5",
     "@emotion/react": "^11.13.0",
     "@studyops/shared": "*",
+    "@tanstack/react-query": "^5.101.4",
     "@toss/tds-mobile": "^2.5.0",
     "@toss/tds-mobile-ait": "^2.5.0",
+    "overlay-kit": "^1.9.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0"

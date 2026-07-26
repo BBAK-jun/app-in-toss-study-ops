@@ -4,37 +4,31 @@ import { BottomCTA, Button, Modal, Paragraph, Spacing, useToast } from '@toss/td
 
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { ApiError } from '../api/client';
-import { getReminderMessage, shareDiscord } from '../api/rounds';
+import { useReminderMessageMutation, useShareDiscordMutation } from '../query/roundQueries';
 
 export function ReminderPage() {
   const { roundId = '' } = useParams();
   const navigate = useNavigate();
   const { openToast } = useToast();
 
+  const reminderMutation = useReminderMessageMutation(roundId);
+  const shareMutation = useShareDiscordMutation(roundId);
+
   const [message, setMessage] = useState<string>('');
-  const [loading, setLoading] = useState(true);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [sending, setSending] = useState(false);
-
+  // 최초 진입 시 리마인드 문구 생성 (POST 이므로 mutation 사용)
   useEffect(() => {
-    let active = true;
-    (async () => {
-      setError(null);
-      try {
-        const res = await getReminderMessage(roundId);
-        if (active) setMessage(res.message);
-      } catch (e) {
-        if (active) setError(e instanceof ApiError ? e.message : '리마인드 문구를 만들지 못했어요.');
-      } finally {
-        if (active) setLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
+    reminderMutation.mutate(undefined, {
+      onSuccess: (res) => setMessage(res.message),
+      onError: (e) =>
+        setError(e instanceof ApiError ? e.message : '리마인드 문구를 만들지 못했어요.'),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roundId]);
+
+  const loading = reminderMutation.isPending;
 
   const handleCopy = async () => {
     try {
@@ -46,10 +40,9 @@ export function ReminderPage() {
   };
 
   const handleShareDiscord = async () => {
-    setSending(true);
     setError(null);
     try {
-      await shareDiscord(roundId);
+      await shareMutation.mutateAsync(undefined);
       setConfirmOpen(false);
       openToast('Discord로 보냈어요.');
     } catch (e) {
@@ -61,8 +54,6 @@ export function ReminderPage() {
       } else {
         setError(e instanceof ApiError ? e.message : 'Discord 발송에 실패했어요.');
       }
-    } finally {
-      setSending(false);
     }
   };
 
@@ -134,7 +125,7 @@ export function ReminderPage() {
               <Button variant="weak" display="block" onClick={() => setConfirmOpen(false)}>
                 취소
               </Button>
-              <Button color="primary" display="block" loading={sending} onClick={handleShareDiscord}>
+              <Button color="primary" display="block" loading={shareMutation.isPending} onClick={handleShareDiscord}>
                 보내기
               </Button>
             </div>
