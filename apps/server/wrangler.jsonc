@@ -1,0 +1,77 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "studyops-server",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Default environment: local development.
+  // Production via `wrangler deploy --env production`. See ADR-006.
+  "vars": {
+    "ENVIRONMENT": "dev",
+    "TOSS_AUTH_MODE": "dev",
+    "TOSS_API_BASE_URL": "https://apps-in-toss-api.toss.im"
+  },
+
+  // Local dev D1 — also used by `wrangler dev` for the local sqlite file.
+  // Existing database repurposed as dev; see ADR-007.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "studyops-db-dev",
+      "database_id": "a0459919-418c-4563-bf8b-162eeff0396e",
+      "migrations_dir": "src/db/migrations"
+    }
+  ],
+
+  // Observability for logging + wrangler tail. See ADR-008.
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+
+  // MCP server Durable Object — read-only tools for Sisyphus agent. See ADR-010.
+  "durable_objects": {
+    "bindings": [
+      { "name": "STUDYOPS_MCP", "class_name": "StudyOpsMcpAgent" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["StudyOpsMcpAgent"] }
+  ],
+
+  "env": {
+    "production": {
+      // Distinct name so bare `wrangler deploy` doesn't overwrite prod.
+      "name": "studyops-server-production",
+
+      // HARNESS §6.3: prod must run live auth. boot-check enforces this.
+      "vars": {
+        "ENVIRONMENT": "production",
+        "TOSS_AUTH_MODE": "live",
+        "TOSS_API_BASE_URL": "https://apps-in-toss-api.toss.im"
+      },
+
+      // Prod D1 — separate instance from dev. See ADR-007.
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "studyops-db-prod",
+          "database_id": "ae6a0663-e1f8-4fe6-96d5-64c2b335c673",
+          "migrations_dir": "src/db/migrations"
+        }
+      ],
+      "observability": {
+        "enabled": true,
+        "head_sampling_rate": 1
+      },
+
+      // MCP DO binding — inherited from top-level durable_objects/migrations. See ADR-010.
+      "durable_objects": {
+        "bindings": [
+          { "name": "STUDYOPS_MCP", "class_name": "StudyOpsMcpAgent" }
+        ]
+      }
+    }
+  }
+}

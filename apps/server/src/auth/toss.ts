@@ -1,7 +1,7 @@
 // Toss OAuth2 사용자 해석. dev/live 분기.
 // dev: Toss API 스킵, 인가코드 "dev-<userKey>" 파싱(폴백 userKey=1).
 // live: generate-token → accessToken → login-me → { userKey, name }.
-import type { Bindings } from '../env';
+import type { AppEnv } from '../env';
 import { HttpError } from '../lib/http-error';
 
 export interface TossUserInfo {
@@ -10,7 +10,7 @@ export interface TossUserInfo {
 }
 
 export async function resolveTossUser(
-  env: Bindings,
+  env: AppEnv['Bindings'],
   authorizationCode: string,
   referrer: 'DEFAULT' | 'SANDBOX',
 ): Promise<TossUserInfo> {

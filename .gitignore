@@ -43,5 +43,8 @@ Thumbs.db
 /od-*.png
 /open-design-*.png
 
+# Database backups (wrangler d1 export output)
+backups/
+
 # TypeScript
 *.tsbuildinfo

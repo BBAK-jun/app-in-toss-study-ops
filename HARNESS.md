@@ -38,10 +38,25 @@
   - [x] 루트 `qa-*.png` 13개 파일 구조화 → `public/qa/legacy/`
   - [x] MVP 1차 결정 4개 ADR로 분해 (Cloudflare, Toss auth, 모노레포, 하네스)
   - [x] `npm run wiki:{dev,build,index}` 스크립트 등록
+- **완료된 것** (환경 분리 + D1 격리 + CI/CD, 7/26):
+  - [x] `wrangler.toml` → `wrangler.jsonc` 마이그레이션 + `env.production` 블록
+  - [x] D1 인스턴스 2개 운영 (dev/prod 격리, prod D1 마이그레이션 적용 완료)
+  - [x] GitHub Actions CI/CD 파이프라인 (ci.yml + deploy.yml + migrate-prod.yml)
+  - [x] 부트 타임 fail-fast 검증 (`boot-check.ts`)
+  - [x] ADR 4건 (env 전략 / D1 격리 / 배포 게이트 / MCP 통합)
+  - [x] Wiki 에피소드 페이지 + notion MCP 화이트리스트 추가
+- **완료된 것** (Worker MCP 서버, 7/26):
+  - [x] `StudyOpsMcpAgent` DO (McpAgent 상속, read-only 5개 도구)
+  - [x] `/mcp` 엔드포인트 + Bearer token 인증 (`MCP_API_TOKEN`)
+  - [x] boot-check prod 검증 (MCP_API_TOKEN 필수)
+  - [x] ADR-010 (agents-sdk + MCP SDK + zod3 의존성 결정)
+  - [x] zod v3/v4 공존 (agents는 v4 peer dep, MCP SDK는 v3 — npm alias `zod3`로 해결)
 - **다음 우선순위**:
   1. 파일럿 사용자 1명 확보 (앱인토스 내부 스터디)
-  2. 8/5 데모 시연 흐름 다듬기
-  3. (Phase 2) Linear / GitHub PR / Discord 위키 연동
+  2. GitHub Actions Secrets 등록 (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID)
+  3. 8/5 데모 시연 흐름 다듬기
+  4. MCP 클라이언트 설정 (Sisyphus → `/mcp` 엔드포인트 연결)
+  5. GitHub remote 설정 + PR 머지 (env-separation-d1-isolation 브랜치)
 - **일시 중단 / 후순위**: 멀티테넌트 SaaS, 결제, Notion 연동, AI 요약 고도화
 
 ---
@@ -124,11 +139,12 @@
 ### 3.4 MCP 화이트리스트
 
 | MCP | 용도 | 강제 사용 시점 |
-|---|---|---|
+|---|---|---|---|
 | `codegraph` | 심볼/레퍼런스 탐색 | 기존 심볼 수정 전 **반드시** (caller/callee 파악) |
 | `context7` | 외부 라이브러리 docs | 모르는 API/패키지 사용 시 |
 | `playwright` | 브라우저 자동화 / QA | 화면 동작 검증, 스크린샷 캡처 |
 | `linear` | 이슈/PR 추적 | 위키 changelog 동기화 (Phase 2) |
+| `notion` | 위키 문서 생성/업데이트 | 에피소드/ADR/문서 작성 시 |
 | `open-design` | 디자인 산출물 | mockup 변경, 새 화면 디자인 |
 
 **Anti-pattern**: codegraph를 둔 상태에서 raw grep/read로 심볼을 찾는 행위 금지. codegraph가 인덱싱한 파일은 `codegraph_node(file=...)`로 읽는다.
@@ -270,3 +286,5 @@ githubPR: null       # Phase 2
 |---|---|---|
 | 2026.07.26 | 1.0 | 최초 작성. HARNESS v1 확정. |
 | 2026.07.26 | 1.1 | §2 Sprint 상태 업데이트 (하네스 환경 구축 완료). ADR-005 (watchexec + launchd 자동화) 추가. |
+| 2026.07.26 | 1.2 | §2 Sprint 업데이트 (환경 분리 완료), §3.4 MCP 화이트리스트에 notion 추가. ADR-006~009. |
+| 2026.07.26 | 1.3 | §2 Sprint 업데이트 (Worker MCP 서버 완료). ADR-010 (agents-sdk + MCP SDK + zod3 의존성, StudyOpsMcpAgent DO). |
