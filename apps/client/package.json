@@ -7,8 +7,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:ait": "ait build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "deploy:dev": "ait build && ait deploy --profile dev",
+    "deploy:prod": "ait build && ait deploy --profile prod",
+    "ait:token:dev": "ait token add dev",
+    "ait:token:prod": "ait token add prod"
   },
   "dependencies": {
     "react": "^18.3.1",

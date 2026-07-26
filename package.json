@@ -23,6 +23,8 @@
     "types:server": "npm run types -w apps/server",
     "deploy": "npm run deploy -w apps/server",
     "deploy:production": "npm run deploy:production -w apps/server",
+    "deploy:client:dev": "npm run deploy:dev -w apps/client",
+    "deploy:client:prod": "npm run deploy:prod -w apps/client",
     "db:generate": "npm run db:generate -w apps/server",
     "db:apply:dev": "npm run db:apply:dev -w apps/server",
     "db:apply:prod": "npm run db:apply:prod -w apps/server",
