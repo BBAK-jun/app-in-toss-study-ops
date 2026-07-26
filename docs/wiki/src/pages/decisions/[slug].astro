@@ -1,0 +1,47 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const decisions = await getCollection('decisions');
+  return decisions.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+const statusLabel: Record<string, string> = {
+  proposed: '제안됨',
+  accepted: '채택됨',
+  deprecated: '사용 중단',
+  superseded: '대체됨',
+  rejected: '기각됨',
+};
+---
+
+<BaseLayout
+  title={`${entry.data.id} — ${entry.data.title}`}
+  subtitle={statusLabel[entry.data.status] ?? entry.data.status}
+>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
+    <span class={`badge badge--${entry.data.status}`}>{entry.data.status}</span>
+    <span class="badge">{new Date(entry.data.date).toLocaleDateString('ko-KR')}</span>
+    {entry.data.tags.map((tag) => <span class="badge">#{tag}</span>)}
+  </div>
+
+  {entry.data.supersededBy && (
+    <div class="card" style="margin-bottom: 24px; background: #fef3c7; border-color: #f59e0b;">
+      ⚠ 이 결정은 <a href={`/decisions/${entry.data.supersededBy}`}>{entry.data.supersededBy}</a>에 의해 대체되었습니다.
+    </div>
+  )}
+
+  <article class="prose">
+    <Content />
+  </article>
+
+  <hr style="margin: 40px 0; border: none; border-top: 1px solid var(--color-border);" />
+  <a href="/decisions">← 결정 목록</a>
+</BaseLayout>

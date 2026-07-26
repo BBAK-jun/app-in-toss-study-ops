@@ -1,0 +1,43 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const qa = (await getCollection('qa')).sort((a, b) =>
+  Number(b.data.date) - Number(a.data.date),
+);
+---
+
+<BaseLayout title="QA 갤러리" subtitle={`총 ${qa.length}개의 검증 세션`}>
+  {
+    qa.length === 0 ? (
+      <div class="empty">
+        <div class="empty__title">QA 기록이 없습니다</div>
+        <div>
+          UI 변경 후에는 반드시 <code>src/content/qa/&lt;id&gt;.md</code>로 검증 결과를 남기세요. (HARNESS.md §5.2)
+        </div>
+      </div>
+    ) : (
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+        {qa.map((q) => (
+          <a href={`/qa/${q.id}`} class="card" style="display: block;">
+            {q.data.screenshots[0] && (
+              <img
+                src={q.data.screenshots[0].path}
+                alt={q.data.screenshots[0].label}
+                style="width: 100%; aspect-ratio: 3/2; object-fit: cover; margin-bottom: 12px;"
+              />
+            )}
+            <div class="card__title">{q.data.target}</div>
+            <div class="card__meta">
+              <span class={`badge badge--${q.data.result}`}>{q.data.result}</span>
+              {' · '}
+              {new Date(q.data.date).toLocaleDateString('ko-KR')}
+              {' · '}
+              {q.data.screenshots.length} 스크린샷
+            </div>
+          </a>
+        ))}
+      </div>
+    )
+  }
+</BaseLayout>

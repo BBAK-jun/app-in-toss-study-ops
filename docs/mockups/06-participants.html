@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyOps Bot — 참여자 관리</title>
+<link rel="stylesheet" href="tds.css">
+</head>
+<body>
+<div class="device">
+  <div class="status-bar">
+    <span>9:41</span>
+    <span class="right">
+      <span class="bars"><span></span><span></span><span></span><span></span></span>
+      <span style="font-size:13px;font-weight:600;">5G</span>
+      <span class="battery"><span></span></span>
+    </span>
+  </div>
+
+  <div class="nav">
+    <button class="nav-left" aria-label="뒤로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <div class="nav-title">참여자 관리</div>
+    <button class="nav-right">
+      <span class="nav-action">추가</span>
+    </button>
+  </div>
+
+  <div class="screen">
+    <div class="top">
+      <h1 class="top-title">12명 참여 중</h1>
+      <div class="top-subtitle">리액트 네이티브 스터디</div>
+    </div>
+
+    <!-- 검색 -->
+    <div class="section" style="padding:0;">
+      <div class="field" style="padding:12px 20px;">
+        <div style="display:flex;align-items:center;gap:8px;background:var(--tds-surface-alt);border-radius:var(--tds-radius-pill);padding:8px 14px;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--tds-muted)" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input style="flex:1;border:none;background:transparent;outline:none;font-size:14px;" placeholder="이름으로 찾아요">
+        </div>
+      </div>
+    </div>
+
+    <!-- 참여자 목록 -->
+    <div class="section">
+      <div class="list-header">운영진</div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="width:40px;height:40px;background:var(--tds-blue-tint);color:var(--tds-blue);">HK</div>
+        <div class="lr-content">
+          <div class="lr-title">최하경 <span class="badge blue" style="margin-left:6px;">운영자</span></div>
+          <div class="lr-subtitle">평균 제출률 100% · 15회 참여</div>
+        </div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="list-header">참여자 · 11명</div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="width:40px;height:40px;">JY</div>
+        <div class="lr-content">
+          <div class="lr-title">김지연</div>
+          <div class="lr-subtitle">평균 제출률 87% · 14회 참여</div>
+        </div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="width:40px;height:40px;background:var(--tds-warn-tint);color:var(--tds-warn);">JH</div>
+        <div class="lr-content">
+          <div class="lr-title">이정훈</div>
+          <div class="lr-subtitle">평균 제출률 60% · 연속 2회 미제출</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge warn">주의</span>
+          <span class="chev">›</span>
+        </div>
+      </div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="width:40px;height:40px;">SM</div>
+        <div class="lr-content">
+          <div class="lr-title">박성민</div>
+          <div class="lr-subtitle">평균 제출률 93% · 15회 참여</div>
+        </div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="width:40px;height:40px;">DS</div>
+        <div class="lr-content">
+          <div class="lr-title">정다솜</div>
+          <div class="lr-subtitle">평균 제출률 100% · 15회 참여</div>
+        </div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="width:40px;height:40px;">YR</div>
+        <div class="lr-content">
+          <div class="lr-title">한예린</div>
+          <div class="lr-subtitle">평균 제출률 80% · 12회 참여</div>
+        </div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="width:40px;height:40px;background:var(--tds-surface-alt);color:var(--tds-fg-secondary);">+6</div>
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:14px;color:var(--tds-fg-secondary);">외 6명 더 보기</div>
+        </div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+    </div>
+
+    <!-- 일괄 안내 -->
+    <div class="section">
+      <div class="list-row">
+        <div class="lr-thumb" style="background:var(--tds-blue-tint);color:var(--tds-blue);">✉</div>
+        <div class="lr-content">
+          <div class="lr-title">전체 공지 보내기</div>
+          <div class="lr-subtitle">12명 모두에게 Discord DM이나 채널로 보내요</div>
+        </div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="ARCHITECTURE"
+  subtitle="구현 상세 설계서 · 원본: docs/ARCHITECTURE.md"
+>
+  <div class="card" style="margin-bottom: 24px;">
+    <strong>원본 파일:</strong> <code>/docs/ARCHITECTURE.md</code> (1052줄)
+    <br />
+    <strong>작성일:</strong> 2026.07.12 KST
+  </div>
+
+  <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 12px;">설계 원칙</h2>
+  <ol style="margin-bottom: 24px; padding-left: 20px;">
+    <li><strong>단순성 > 유연성</strong>: MVP 8개 기능만. 과잉 추상화·과잉 설정 금지.</li>
+    <li><strong>Toss 식별자 = 진실</strong>: <code>userKey</code>가 사용자 PK.</li>
+    <li><strong>dev/live 분기</strong>: 인증만 분기. 비즈니스 로직은 분기 없음.</li>
+    <li><strong>타입 공유</strong>: 서버·클라 동일 DTO.</li>
+    <li><strong>복붙 가능</strong>: 코드 블록은 그대로 파일에 넣으면 동작.</li>
+  </ol>
+
+  <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 12px;">주요 섹션</h2>
+  <div class="list">
+    <div class="list-item"><strong>4-1.</strong> 모노레포 디렉토리 구조</div>
+    <div class="list-item"><strong>4-2.</strong> D1 데이터베이스 스키마 (Drizzle ORM)</div>
+    <div class="list-item"><strong>4-3.</strong> REST API 컨트랙트</div>
+    <div class="list-item"><strong>4-4.</strong> 인증 플로우 시퀀스 (Toss OAuth2)</div>
+    <div class="list-item"><strong>4-5.</strong> 클라이언트 화면 구조 / 라우팅</div>
+    <div class="list-item"><strong>4-6.</strong> Discord Webhook 통합 설계</div>
+    <div class="list-item"><strong>4-7.</strong> 환경변수 / 비밀키 매핑</div>
+    <div class="list-item"><strong>4-8.</strong> 로컬 개발 & 배포 명령</div>
+    <div class="list-item"><strong>4-9.</strong> 구현 우선순위 / 에이전트 작업 분할</div>
+    <div class="list-item"><strong>4-10.</strong> 리스크 & 결정 근거 (R1~R6)</div>
+  </div>
+
+  <h2 style="font-size: 18px; font-weight: 600; margin: 32px 0 12px;">리스크 결정 (요약)</h2>
+  <table>
+    <tr><th>ID</th><th>주제</th><th>결정</th></tr>
+    <tr><td>R1</td><td>mTLS 없이 개발</td><td><code>TOSS_AUTH_MODE=dev|live</code> 분기</td></tr>
+    <tr><td>R2</td><td>TDS emotion 번들</td><td>MVP에서는 사전 최적화 금지</td></tr>
+    <tr><td>R3</td><td>D1 로컬 개발</td><td>항상 <code>--local</code> 명시</td></tr>
+    <tr><td>R4</td><td>세션 토큰 저장</td><td><code>sessionStorage</code>만, <code>localStorage</code> 금지</td></tr>
+    <tr><td>R5</td><td>participants 범위</td><td>스터디 단위 (회차별 X)</td></tr>
+    <tr><td>R6</td><td>UNIQUE 제약</td><td>회차당 1인 1제출</td></tr>
+  </table>
+
+  <div class="card" style="margin-top: 24px;">
+    📄 전체 내용과 코드 블록은 <code>/docs/ARCHITECTURE.md</code>에서.
+  </div>
+</BaseLayout>

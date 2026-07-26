@@ -1,0 +1,107 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const [episodes, decisions, qa, sessions] = await Promise.all([
+  getCollection('episodes'),
+  getCollection('decisions'),
+  getCollection('qa'),
+  getCollection('sessions'),
+]);
+
+// 타임라인: 가장 최근에 업데이트된 항목들을 섞어서 정렬
+type TimelineEntry = {
+  date: Date;
+  kind: 'episode' | 'decision' | 'qa' | 'session';
+  title: string;
+  desc: string;
+  href: string;
+  status?: string;
+};
+
+const timeline: TimelineEntry[] = [
+  ...episodes.map((e) => ({
+    date: e.data.shippedAt ?? e.data.startedAt,
+    kind: 'episode' as const,
+    title: e.data.title,
+    desc: e.data.summary || e.data.type,
+    href: `/episodes/${e.id}`,
+    status: e.data.status,
+  })),
+  ...decisions.map((d) => ({
+    date: d.data.date,
+    kind: 'decision' as const,
+    title: d.data.title,
+    desc: `ADR · ${d.data.status}`,
+    href: `/decisions/${d.id}`,
+    status: d.data.status,
+  })),
+  ...qa.map((q) => ({
+    date: q.data.date,
+    kind: 'qa' as const,
+    title: q.data.target,
+    desc: `${q.data.result} · ${q.data.screenshots.length} 스크린샷`,
+    href: `/qa/${q.id}`,
+    status: q.data.result,
+  })),
+].sort((a, b) => Number(b.date) - Number(a.date)).slice(0, 12);
+
+const shippedCount = episodes.filter((e) => e.data.status === 'shipped').length;
+const inProgressCount = episodes.filter((e) => e.data.status === 'in-progress').length;
+const acceptedAdrCount = decisions.filter((d) => d.data.status === 'accepted').length;
+---
+
+<BaseLayout
+  title="대시보드"
+  subtitle="StudyOps Bot의 작업 진행 상황을 한눈에"
+>
+  <section class="stats-grid">
+    <div class="stat">
+      <div class="stat__value">{episodes.length}</div>
+      <div class="stat__label">총 에피소드</div>
+    </div>
+    <div class="stat">
+      <div class="stat__value">{shippedCount} / {inProgressCount}</div>
+      <div class="stat__label">Shipped / 진행 중</div>
+    </div>
+    <div class="stat">
+      <div class="stat__value">{decisions.length}</div>
+      <div class="stat__label">ADR ({acceptedAdrCount} 채택)</div>
+    </div>
+    <div class="stat">
+      <div class="stat__value">{qa.length} / {sessions.length}</div>
+      <div class="stat__label">QA / 세션</div>
+    </div>
+  </section>
+
+  <section>
+    <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">최근 활동</h2>
+    {
+      timeline.length === 0 ? (
+        <div class="empty">
+          <div class="empty__title">아직 활동 기록이 없습니다</div>
+          <div>HARNESS.md §8 작업 시퀀스를 따라 첫 에피소드를 작성하세요.</div>
+        </div>
+      ) : (
+        <div class="timeline">
+          {timeline.map((item) => (
+            <div class="timeline__item">
+              <div class="timeline__date">
+                {new Date(item.date).toLocaleDateString('ko-KR', {
+                  year: 'numeric', month: 'long', day: 'numeric',
+                })}
+                {' · '}
+                {item.kind}
+                {item.status && ` · ${item.status}`}
+              </div>
+              <div class="timeline__title">
+                <a href={item.href}>{item.title}</a>
+              </div>
+              <div class="timeline__desc">{item.desc}</div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+  </section>
+</BaseLayout>

@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const decisions = (await getCollection('decisions')).sort((a, b) =>
+  Number(b.data.date) - Number(a.data.date),
+);
+---
+
+<BaseLayout title="결정 (ADR)" subtitle={`총 ${decisions.length}개의 아키텍처 결정 기록`}>
+  {
+    decisions.length === 0 ? (
+      <div class="empty">
+        <div class="empty__title">ADR이 없습니다</div>
+        <div>
+          중요한 결정을 내릴 때마다 <code>src/content/decisions/adr-NNN-slug.md</code>로 남기세요. (HARNESS.md §5.3)
+        </div>
+      </div>
+    ) : (
+      <div class="list">
+        {decisions.map((d) => (
+          <a href={`/decisions/${d.id}`} class="list-item">
+            <div class="list-item__title">
+              <span style="font-family: var(--font-mono); color: var(--color-text-subtle); font-weight: 500;">
+                {d.data.id}
+              </span>
+              {' · '}
+              {d.data.title}
+            </div>
+            <div class="list-item__meta">
+              <span class={`badge badge--${d.data.status}`}>{d.data.status}</span>
+              <span>{new Date(d.data.date).toLocaleDateString('ko-KR')}</span>
+              {d.data.tags.map((t) => <span class="badge">#{t}</span>)}
+            </div>
+          </a>
+        ))}
+      </div>
+    )
+  }
+</BaseLayout>

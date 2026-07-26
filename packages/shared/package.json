@@ -1,0 +1,26 @@
+{
+  "name": "@studyops/shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "StudyOps Bot — server/client 공용 타입 (엔티티, DTO, 에러)",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit"
+  }
+}

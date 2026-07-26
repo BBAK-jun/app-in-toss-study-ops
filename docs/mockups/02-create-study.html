@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyOps Bot — 스터디 만들기</title>
+<link rel="stylesheet" href="tds.css">
+</head>
+<body>
+<div class="device">
+  <div class="status-bar">
+    <span>9:41</span>
+    <span class="right">
+      <span class="bars"><span></span><span></span><span></span><span></span></span>
+      <span style="font-size:13px;font-weight:600;">5G</span>
+      <span class="battery"><span></span></span>
+    </span>
+  </div>
+
+  <!-- Navigation (뒤로가기 + 완료는 BottomCTA로) -->
+  <div class="nav">
+    <button class="nav-left" aria-label="뒤로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <div class="nav-title">스터디 만들기</div>
+  </div>
+
+  <div class="screen">
+    <!-- Top -->
+    <div class="top">
+      <h1 class="top-title">새 스터디를 시작해요</h1>
+      <div class="top-subtitle">이름과 운영 방식을 정해요</div>
+    </div>
+
+    <!-- Form fields -->
+    <div class="section" style="padding:0;">
+      <div class="field">
+        <div class="field-label">스터디 이름</div>
+        <input class="field-input" placeholder="예) 리액트 네이티브 스터디" value="리액트 네이티브 스터디">
+      </div>
+
+      <div class="field">
+        <div class="field-label">스터디 설명 (선택)</div>
+        <input class="field-input" placeholder="무엇을 하는 스터디인가요?">
+      </div>
+    </div>
+
+    <!-- 운영 주기 -->
+    <div class="section">
+      <div class="list-header">운영 주기</div>
+      <div class="list-row padding-s">
+        <div class="lr-content"><div class="lr-title" style="font-size:15px;">매주</div></div>
+        <div class="lr-right">
+          <span class="badge blue">선택됨</span>
+          <span class="chev">›</span>
+        </div>
+      </div>
+      <div class="list-row padding-s">
+        <div class="lr-content"><div class="lr-title" style="font-size:15px;color:var(--tds-fg-secondary);">격주</div></div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+      <div class="list-row padding-s">
+        <div class="lr-content"><div class="lr-title" style="font-size:15px;color:var(--tds-fg-secondary);">매월</div></div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+    </div>
+
+    <!-- 제출 방식 -->
+    <div class="section">
+      <div class="list-header">제출 방식</div>
+      <div class="list-row padding-s">
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:15px;">링크 제출</div>
+          <div class="lr-subtitle">PR, 노션, 블로그 주소를 받아요</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge blue">선택됨</span>
+          <span class="chev">›</span>
+        </div>
+      </div>
+      <div class="list-row padding-s">
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:15px;color:var(--tds-fg-secondary);">텍스트 제출</div>
+          <div class="lr-subtitle">회고나 글을 직접 받아요</div>
+        </div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+    </div>
+
+    <!-- Discord 연동 -->
+    <div class="section">
+      <div class="list-header">연동</div>
+      <div class="list-row">
+        <div class="lr-thumb" style="background:#5865F2;color:#fff;font-size:14px;">D</div>
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:15px;">Discord Webhook 연결</div>
+          <div class="lr-subtitle">현황과 리마인드를 채널에 보내요</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge">선택</span>
+          <span class="chev">›</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:16px 20px;color:var(--tds-muted);font-size:12px;line-height:1.5;">
+      참여자는 다음 화면에서 추가할 수 있어요.
+    </div>
+  </div>
+
+  <!-- BottomCTA -->
+  <div class="bottom-cta">
+    <button class="btn primary">다음</button>
+  </div>
+</div>
+</body>
+</html>

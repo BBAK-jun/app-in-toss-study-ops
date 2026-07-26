@@ -1,0 +1,8 @@
+# Astro 빌드 산출물 — 커밋하지 않음. (루트 .gitignore와 별개)
+dist/
+.astro/
+node_modules/
+
+# 인덱싱 스크립트가 자동 생성하는 디렉토리 (에피소드에서 링크하므로 커밋하지만,
+# sessions/와 changelog/는 100% 재생성 가능하므로 ignore 처리 — Phase 2 정책 재검토)
+# 주의: 현재는 수동 seed를 커밋해야 초기 화면이 보이므로 일단 ignore 안 함.

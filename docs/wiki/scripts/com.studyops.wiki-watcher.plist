@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  StudyOps Wiki Watcher — LaunchAgent
+  ===================================
+  install-daemon.sh 이 이 템플릿의 __PLACEHOLDER__ 를 치환하여
+  ~/Library/LaunchAgents/com.studyops.wiki-watcher.plist 로 복사한다.
+
+  동작:
+    - 로그인 시 자동 시작 (RunAtLoad)
+    - 비정상 종료 시 자동 재시작 (KeepAlive.Crashed)
+    - watchexec 가 죽거나 watch.sh 가 exit non-zero → 5초 후 재시작 (ThrottleInterval)
+    - 백그라운드 우선순위 (ProcessType=Background)
+    - 로그는 docs/wiki/logs/watcher.{out,err}.log
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.studyops.wiki-watcher</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>__WIKI_ROOT__/scripts/watch.sh</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>__WIKI_ROOT__</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- 비정상 종료만 재시작. 사용자가 launchctl unload 한 경우엔 재시작 안 함. -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <key>ThrottleInterval</key>
+    <integer>5</integer>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>__ENV_PATH__</string>
+        <key>HOME</key>
+        <string>__HOME__</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>__WIKI_ROOT__/logs/watcher.out.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>__WIKI_ROOT__/logs/watcher.err.log</string>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

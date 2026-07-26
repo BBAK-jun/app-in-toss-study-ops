@@ -1,0 +1,27 @@
+{
+  "name": "studyops-server",
+  "version": "0.0.0",
+  "private": true,
+  "description": "StudyOps Bot — Hono on Cloudflare Workers + D1 (Drizzle ORM)",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "tsc --noEmit",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:apply:local": "wrangler d1 migrations apply studyops-db --local",
+    "db:apply:remote": "wrangler d1 migrations apply studyops-db --remote"
+  },
+  "dependencies": {
+    "@studyops/shared": "*",
+    "drizzle-orm": "^0.36.0",
+    "hono": "^4.6.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241101.0",
+    "drizzle-kit": "^0.28.0",
+    "typescript": "^5.6.0",
+    "wrangler": "^4.114.0"
+  }
+}

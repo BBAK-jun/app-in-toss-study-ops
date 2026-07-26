@@ -1,0 +1,51 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const sessions = (await getCollection('sessions')).sort((a, b) =>
+  Number(b.data.lastMessageAt ?? b.data.updatedAt) -
+  Number(a.data.lastMessageAt ?? a.data.updatedAt),
+);
+---
+
+<BaseLayout title="세션" subtitle={`OpenCode 세션 인덱스 · 총 ${sessions.length}개 (자동 생성)`}>
+  <div class="card" style="margin-bottom: 20px; background: #e6f0ff; border-color: var(--color-primary);">
+    ℹ 이 페이지는 <code>scripts/index-local.ts</code>가 <code>.omo/run-continuation/</code>에서 자동으로 생성합니다. 수동 편집하지 마세요.
+  </div>
+
+  {
+    sessions.length === 0 ? (
+      <div class="empty">
+        <div class="empty__title">세션 기록이 없습니다</div>
+        <div>
+          <code>npm run index</code>를 실행하면 자동으로 수집됩니다.
+        </div>
+      </div>
+    ) : (
+      <table>
+        <thead>
+          <tr>
+            <th>Session ID</th>
+            <th>Agent</th>
+            <th>마지막 업데이트</th>
+            <th>관련 에피소드</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sessions.map((s) => (
+            <tr>
+              <td><code>{s.data.sessionId}</code></td>
+              <td>{s.data.agent}</td>
+              <td>{new Date(s.data.lastMessageAt ?? s.data.updatedAt).toLocaleString('ko-KR')}</td>
+              <td>
+                {s.data.relatedEpisodes.length === 0
+                  ? '—'
+                  : s.data.relatedEpisodes.join(', ')}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )
+  }
+</BaseLayout>

@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const episodes = (await getCollection('episodes')).sort((a, b) =>
+  Number(b.data.shippedAt ?? b.data.startedAt) -
+  Number(a.data.shippedAt ?? a.data.startedAt),
+);
+---
+
+<BaseLayout title="에피소드" subtitle={`총 ${episodes.length}개의 작업 단위`}>
+  {
+    episodes.length === 0 ? (
+      <div class="empty">
+        <div class="empty__title">에피소드가 없습니다</div>
+        <div>
+          HARNESS.md §5.1의 템플릿으로 <code>src/content/episodes/YYYY-MM-DD-slug.md</code>를 작성하세요.
+        </div>
+      </div>
+    ) : (
+      <div class="list">
+        {episodes.map((e) => (
+          <a href={`/episodes/${e.id}`} class="list-item">
+            <div class="list-item__title">{e.data.title}</div>
+            <div class="list-item__meta">
+              <span class={`badge badge--${e.data.status}`}>{e.data.status}</span>
+              <span>{e.data.type}</span>
+              <span>{new Date(e.data.startedAt).toLocaleDateString('ko-KR')}</span>
+              {e.data.shippedAt && (
+                <span>→ {new Date(e.data.shippedAt).toLocaleDateString('ko-KR')}</span>
+              )}
+              <span>· {e.data.touchedFiles.length} 파일</span>
+            </div>
+            {e.data.summary && (
+              <div style="margin-top: 6px; font-size: 13px; color: var(--color-text-muted);">
+                {e.data.summary}
+              </div>
+            )}
+          </a>
+        ))}
+      </div>
+    )
+  }
+</BaseLayout>

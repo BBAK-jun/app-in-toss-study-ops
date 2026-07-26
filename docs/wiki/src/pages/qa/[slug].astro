@@ -1,0 +1,58 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const qa = await getCollection('qa');
+  return qa.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<BaseLayout
+  title={`QA — ${entry.data.target}`}
+  subtitle={`${entry.data.result} · ${new Date(entry.data.date).toLocaleString('ko-KR')}`}
+>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;">
+    <span class={`badge badge--${entry.data.result}`}>{entry.data.result}</span>
+    <span class="badge">{entry.data.environment}</span>
+    {entry.data.browser && <span class="badge">{entry.data.browser}</span>}
+    {entry.data.episodeId && (
+      <a href={`/episodes/${entry.data.episodeId}`} class="badge">
+        에피소드: {entry.data.episodeId}
+      </a>
+    )}
+  </div>
+
+  {entry.data.screenshots.length > 0 && (
+    <section style="margin-bottom: 32px;">
+      <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">
+        스크린샷 ({entry.data.screenshots.length})
+      </h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+        {entry.data.screenshots.map((s) => (
+          <figure>
+            <img src={s.path} alt={s.label} style="width: 100%;" />
+            {s.label && (
+              <figcaption style="font-size: 12px; color: var(--color-text-muted); margin-top: 6px; text-align: center;">
+                {s.label}
+              </figcaption>
+            )}
+          </figure>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <article class="prose">
+    <Content />
+  </article>
+
+  <hr style="margin: 40px 0; border: none; border-top: 1px solid var(--color-border);" />
+  <a href="/qa">← QA 갤러리</a>
+</BaseLayout>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyOps Bot — 제출 현황</title>
+<link rel="stylesheet" href="tds.css">
+</head>
+<body>
+<div class="device">
+  <div class="status-bar">
+    <span>9:41</span>
+    <span class="right">
+      <span class="bars"><span></span><span></span><span></span><span></span></span>
+      <span style="font-size:13px;font-weight:600;">5G</span>
+      <span class="battery"><span></span></span>
+    </span>
+  </div>
+
+  <div class="nav">
+    <button class="nav-left" aria-label="뒤로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <div class="nav-title">15회차 제출 현황</div>
+    <button class="nav-right">
+      <span style="font-size:14px;color:var(--tds-fg-secondary);">공유</span>
+    </button>
+  </div>
+
+  <div class="screen">
+    <!-- Top -->
+    <div class="top">
+      <h1 class="top-title">9명이 제출했어요</h1>
+      <div class="top-subtitle">3명이 아직 제출하지 않았어요</div>
+    </div>
+
+    <!-- 제출률 카드 (핵심) -->
+    <div class="progress-card">
+      <div class="pc-label">제출률</div>
+      <div class="pc-rate">75<span class="denom">%</span></div>
+      <div class="progress-bar"><div class="fill" style="width:75%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tds-blue);margin-top:8px;">
+        <span>제출 9명</span><span>미제출 3명</span><span>전체 12명</span>
+      </div>
+    </div>
+
+    <!-- 미제출자 섹션 (강조) -->
+    <div class="section" style="margin-top:20px;">
+      <div class="list-header" style="color:var(--tds-warn);">미제출자 · 3명</div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="background:var(--tds-warn-tint);color:var(--tds-warn);width:36px;height:36px;font-size:13px;">JY</div>
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:16px;">김지연</div>
+          <div class="lr-subtitle">마감 2일 전</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge warn">미제출</span>
+        </div>
+      </div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="background:var(--tds-warn-tint);color:var(--tds-warn);width:36px;height:36px;font-size:13px;">SM</div>
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:16px;">박성민</div>
+          <div class="lr-subtitle">마감 2일 전</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge warn">미제출</span>
+        </div>
+      </div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="background:var(--tds-warn-tint);color:var(--tds-warn);width:36px;height:36px;font-size:13px;">JH</div>
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:16px;">이정훈</div>
+          <div class="lr-subtitle">마감 2일 전 · 연속 2회 미제출</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge danger">주의</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 제출 완료자 -->
+    <div class="section">
+      <div class="list-header" style="color:var(--tds-success);">제출 완료 · 9명</div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="background:var(--tds-success-tint);color:var(--tds-success);width:36px;height:36px;font-size:13px;">HK</div>
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:16px;">최하경</div>
+          <div class="lr-subtitle" style="display:flex;align-items:center;gap:6px;">
+            <span style="color:var(--tds-blue);">PR 링크</span>
+            <span>· 2일 전</span>
+          </div>
+        </div>
+        <div class="lr-right">
+          <span class="badge success">제출</span>
+        </div>
+      </div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="background:var(--tds-success-tint);color:var(--tds-success);width:36px;height:36px;font-size:13px;">DS</div>
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:16px;">정다솜</div>
+          <div class="lr-subtitle"><span style="color:var(--tds-blue);">블로그 링크</span> · 3일 전</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge success">제출</span>
+        </div>
+      </div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="background:var(--tds-success-tint);color:var(--tds-success);width:36px;height:36px;font-size:13px;">YR</div>
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:16px;">한예린</div>
+          <div class="lr-subtitle"><span style="color:var(--tds-blue);">PR 링크</span> · 3일 전</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge success">제출</span>
+        </div>
+      </div>
+
+      <div class="list-row padding-s">
+        <div class="lr-thumb" style="background:var(--tds-success-tint);color:var(--tds-success);width:36px;height:36px;font-size:13px;">+6</div>
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:14px;color:var(--tds-fg-secondary);">외 6명 제출 완료</div>
+        </div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BottomCTA: 미제출자 리마인드 -->
+  <div class="bottom-cta">
+    <button class="btn primary">미제출자 3명에게 리마인드 보내기</button>
+  </div>
+</div>
+</body>
+</html>

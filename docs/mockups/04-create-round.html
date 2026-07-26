@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyOps Bot — 회차 만들기</title>
+<link rel="stylesheet" href="tds.css">
+</head>
+<body>
+<div class="device">
+  <div class="status-bar">
+    <span>9:41</span>
+    <span class="right">
+      <span class="bars"><span></span><span></span><span></span><span></span></span>
+      <span style="font-size:13px;font-weight:600;">5G</span>
+      <span class="battery"><span></span></span>
+    </span>
+  </div>
+
+  <div class="nav">
+    <button class="nav-left" aria-label="뒤로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <div class="nav-title">새 회차 만들기</div>
+  </div>
+
+  <div class="screen">
+    <div class="top">
+      <h1 class="top-title">16회차</h1>
+      <div class="top-subtitle">리액트 네이티브 스터디</div>
+    </div>
+
+    <!-- 회차 정보 -->
+    <div class="section" style="padding:0;">
+      <div class="field">
+        <div class="field-label">주제</div>
+        <input class="field-input" placeholder="예) Context API 활용" value="Context API 활용">
+      </div>
+
+      <div class="field">
+        <div class="field-label">마감일</div>
+        <input class="field-input" type="date" value="2026-07-19">
+        <div class="field-hint">매주 일요일 23:59에 마감해요</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">제출 링크 (선택)</div>
+        <input class="field-input" placeholder="https://github.com/study-rn/week-16" value="https://github.com/study-rn/week-16">
+        <div class="field-hint">참여자에게 보여줄 과제 링크를 등록해요</div>
+      </div>
+    </div>
+
+    <!-- 제출 형식 -->
+    <div class="section">
+      <div class="list-header">제출 형식</div>
+      <div class="list-row padding-s">
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:15px;">PR 링크</div>
+          <div class="lr-subtitle">GitHub Pull Request 주소를 받아요</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge blue">선택됨</span>
+        </div>
+      </div>
+      <div class="list-row padding-s">
+        <div class="lr-content"><div class="lr-title" style="font-size:15px;color:var(--tds-fg-secondary);">블로그 주소</div></div>
+        <div class="lr-right"></div>
+      </div>
+      <div class="list-row padding-s">
+        <div class="lr-content"><div class="lr-title" style="font-size:15px;color:var(--tds-fg-secondary);">노션 문서</div></div>
+        <div class="lr-right"></div>
+      </div>
+    </div>
+
+    <!-- 자동 리마인드 설정 -->
+    <div class="section">
+      <div class="list-header">자동 리마인드</div>
+      <div class="list-row">
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:15px;">마감 24시간 전</div>
+          <div class="lr-subtitle">미제출자에게 자동 알림</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge blue">켜짐</span>
+        </div>
+      </div>
+      <div class="list-row">
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:15px;">마감 3시간 전</div>
+          <div class="lr-subtitle">마지막 리마인드</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge">꺼짐</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Discord 공지 자동 발송 -->
+    <div class="section">
+      <div class="list-row">
+        <div class="lr-thumb" style="background:#5865F2;color:#fff;font-size:14px;">D</div>
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:15px;">회차 생성 시 Discord에 공지</div>
+          <div class="lr-subtitle">#study-rn 채널에 자동으로 올려요</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge blue">켜짐</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-cta">
+    <button class="btn primary">회차 만들기</button>
+  </div>
+</div>
+</body>
+</html>

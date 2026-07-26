@@ -1,0 +1,96 @@
+---
+import '../styles/global.css';
+
+interface NavItem {
+  href: string;
+  label: string;
+  current?: boolean;
+}
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  nav?: NavItem[];
+}
+
+const { title, subtitle = '', nav = [] } = Astro.props;
+
+const collections: NavItem[] = [
+  { href: '/', label: '대시보드' },
+  { href: '/episodes', label: '에피소드' },
+  { href: '/decisions', label: '결정 (ADR)' },
+  { href: '/qa', label: 'QA 갤러리' },
+  { href: '/sessions', label: '세션' },
+];
+
+const resources: NavItem[] = [
+  { href: '/harness', label: 'HARNESS.md' },
+  { href: '/prd', label: 'PRD' },
+  { href: '/architecture', label: 'ARCHITECTURE' },
+];
+---
+
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} — StudyOps Wiki</title>
+    <meta name="description" content={subtitle || title} />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar__brand">📚 StudyOps Wiki</div>
+        <div class="sidebar__sub">작업 진행 상황을 데이터로</div>
+
+        <div class="sidebar__section">
+          <div class="sidebar__title">콘텐츠</div>
+          {
+            collections.map((item) => (
+              <a
+                href={item.href}
+                class="sidebar__link"
+                aria-current={Astro.url.pathname === item.href ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            ))
+          }
+        </div>
+
+        <div class="sidebar__section">
+          <div class="sidebar__title">외부 문서</div>
+          {
+            resources.map((item) => (
+              <a href={item.href} class="sidebar__link">
+                {item.label}
+              </a>
+            ))
+          }
+        </div>
+
+        {
+          nav.length > 0 && (
+            <div class="sidebar__section">
+              <div class="sidebar__title">이 페이지</div>
+              {nav.map((item) => (
+                <a href={item.href} class="sidebar__link">
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          )
+        }
+      </aside>
+
+      <main class="main">
+        <div class="page-header">
+          <h1 class="page-title">{title}</h1>
+          {subtitle && <p class="page-subtitle">{subtitle}</p>}
+        </div>
+
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>

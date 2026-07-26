@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyOps Bot — Discord 현황 공유</title>
+<link rel="stylesheet" href="tds.css">
+</head>
+<body>
+<div class="device">
+  <div class="status-bar">
+    <span>9:41</span>
+    <span class="right">
+      <span class="bars"><span></span><span></span><span></span><span></span></span>
+      <span style="font-size:13px;font-weight:600;">5G</span>
+      <span class="battery"><span></span></span>
+    </span>
+  </div>
+
+  <div class="nav">
+    <button class="nav-left" aria-label="뒤로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <div class="nav-title">현황 공유하기</div>
+  </div>
+
+  <div class="screen">
+    <div class="top">
+      <h1 class="top-title">Discord에 공유해요</h1>
+      <div class="top-subtitle">15회차 제출 현황을 한눈에 보여줘요</div>
+    </div>
+
+    <!-- 공유할 채널 -->
+    <div class="section">
+      <div class="list-header">공유할 채널</div>
+      <div class="list-row">
+        <div class="lr-thumb" style="background:#5865F2;color:#fff;font-size:14px;">#</div>
+        <div class="lr-content">
+          <div class="lr-title">study-rn</div>
+          <div class="lr-subtitle">리액트 네이티브 스터디 채널</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge blue">연결됨</span>
+          <span class="chev">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 미리보기 -->
+    <div class="section" style="padding-bottom:14px;">
+      <div class="list-header">메시지 미리보기</div>
+    </div>
+
+    <div class="discord-preview">
+      <div class="dp-header">
+        <div class="dp-avatar">S</div>
+        <div>
+          <div class="dp-name">StudyOps Bot <span class="dp-time">오늘 오후 3:42</span></div>
+        </div>
+      </div>
+      <div class="dp-message">📋 <strong>리액트 네이티브 스터디 15회차 제출 현황</strong></div>
+
+      <div class="dp-embed">
+        <div class="dpe-title">React Navigation · 제출률 75%</div>
+        <div class="dpe-field"><strong>✅ 제출 완료</strong> · 9명</div>
+        <div class="dpe-field"><strong>⏳ 미제출</strong> · 3명 (김지연, 박성민, 이정훈)</div>
+        <div class="dpe-field" style="margin-top:8px;color:var(--tds-muted);">마감까지 2일 남았어요 · 7/14 일요일 23:59</div>
+        <div class="dpe-field" style="margin-top:8px;font-size:11px;color:var(--tds-muted);">과제 링크: github.com/study-rn/week-16</div>
+      </div>
+
+      <div class="dp-message" style="margin-top:10px;">미제출자 분들은 마감 전에 PR을 올려주세요 🙌</div>
+    </div>
+
+    <!-- 공유 옵션 -->
+    <div class="section" style="margin-top:20px;">
+      <div class="list-header">옵션</div>
+
+      <div class="list-row padding-s">
+        <div class="lr-content"><div class="lr-title" style="font-size:15px;">미제출자 멘션</div></div>
+        <div class="lr-right">
+          <span class="badge blue">켜짐</span>
+        </div>
+      </div>
+
+      <div class="list-row padding-s">
+        <div class="lr-content"><div class="lr-title" style="font-size:15px;">제출 완료자 이름 포함</div></div>
+        <div class="lr-right">
+          <span class="badge">꺼짐</span>
+        </div>
+      </div>
+
+      <div class="list-row padding-s">
+        <div class="lr-content"><div class="lr-title" style="font-size:15px;">과제 링크 포함</div></div>
+        <div class="lr-right">
+          <span class="badge blue">켜짐</span>
+        </div>
+      </div>
+
+      <div class="list-row padding-s">
+        <div class="lr-content"><div class="lr-title" style="font-size:15px;">마감 후 자동 요약 공유</div></div>
+        <div class="lr-right">
+          <span class="badge">꺼짐</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 일정 예약 -->
+    <div class="section">
+      <div class="list-row">
+        <div class="lr-thumb" style="background:var(--tds-blue-tint);color:var(--tds-blue);">⏰</div>
+        <div class="lr-content">
+          <div class="lr-title" style="font-size:15px;">마감 3시간 전 자동 공유</div>
+          <div class="lr-subtitle">매 회차 자동으로 올려요</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge">꺼짐</span>
+          <span class="chev">›</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BottomCTA -->
+  <div class="bottom-cta">
+    <button class="btn primary">지금 study-rn에 공유</button>
+  </div>
+</div>
+</body>
+</html>

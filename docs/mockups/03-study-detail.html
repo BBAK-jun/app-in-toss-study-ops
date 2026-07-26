@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyOps Bot — 스터디 상세</title>
+<link rel="stylesheet" href="tds.css">
+</head>
+<body>
+<div class="device">
+  <div class="status-bar">
+    <span>9:41</span>
+    <span class="right">
+      <span class="bars"><span></span><span></span><span></span><span></span></span>
+      <span style="font-size:13px;font-weight:600;">5G</span>
+      <span class="battery"><span></span></span>
+    </span>
+  </div>
+
+  <div class="nav">
+    <button class="nav-left" aria-label="뒤로">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <div class="nav-title">리액트 네이티브 스터디</div>
+    <button class="nav-right" aria-label="더보기" style="padding:6px;">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="screen">
+    <!-- 스터디 정보 Top -->
+    <div class="top">
+      <h1 class="top-title">리액트 네이티브 스터디</h1>
+      <div class="top-subtitle">15회차 진행 중 · 12명 참여</div>
+    </div>
+
+    <!-- 이번 회차 요약 -->
+    <div class="progress-card">
+      <div class="pc-label">15회차 제출률</div>
+      <div class="pc-rate">9<span class="denom">/12 명</span></div>
+      <div class="progress-bar"><div class="fill" style="width:75%"></div></div>
+      <div style="display:flex;gap:6px;margin-top:10px;align-items:center;">
+        <span class="badge success">제출 9명</span>
+        <span class="badge warn">미제출 3명</span>
+      </div>
+    </div>
+
+    <!-- 빠른 액션 -->
+    <div class="section" style="margin-top:20px;">
+      <div class="list-row">
+        <div class="lr-thumb" style="background:var(--tds-success-tint);color:var(--tds-success);">✓</div>
+        <div class="lr-content">
+          <div class="lr-title">제출 현황 보기</div>
+          <div class="lr-subtitle">미제출자 3명 확인</div>
+        </div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+      <div class="list-row">
+        <div class="lr-thumb">🔔</div>
+        <div class="lr-content">
+          <div class="lr-title">미제출자 리마인드</div>
+          <div class="lr-subtitle">문구를 만들어 보내요</div>
+        </div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+      <div class="list-row">
+        <div class="lr-thumb" style="background:#5865F2;color:#fff;font-size:14px;">D</div>
+        <div class="lr-content">
+          <div class="lr-title">Discord에 현황 공유</div>
+          <div class="lr-subtitle">15회차 제출률 75%를 공유해요</div>
+        </div>
+        <div class="lr-right"><span class="chev">›</span></div>
+      </div>
+    </div>
+
+    <!-- 회차 히스토리 -->
+    <div class="section">
+      <div class="list-header">회차 히스토리</div>
+
+      <div class="list-row">
+        <div class="lr-thumb" style="background:var(--tds-blue-tint);color:var(--tds-blue);width:36px;height:36px;font-size:14px;">15</div>
+        <div class="lr-content">
+          <div class="lr-title">15회차 · React Navigation</div>
+          <div class="lr-subtitle">마감 2일 뒤 · 9/12 제출</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge warn">진행 중</span>
+          <span class="chev">›</span>
+        </div>
+      </div>
+
+      <div class="list-row">
+        <div class="lr-thumb" style="background:var(--tds-surface-alt);color:var(--tds-fg-secondary);width:36px;height:36px;font-size:14px;">14</div>
+        <div class="lr-content">
+          <div class="lr-title">14회차 · Animated API</div>
+          <div class="lr-subtitle">완료 · 11/12 제출</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge success">완료</span>
+          <span class="chev">›</span>
+        </div>
+      </div>
+
+      <div class="list-row">
+        <div class="lr-thumb" style="background:var(--tds-surface-alt);color:var(--tds-fg-secondary);width:36px;height:36px;font-size:14px;">13</div>
+        <div class="lr-content">
+          <div class="lr-title">13회차 · FlatList 최적화</div>
+          <div class="lr-subtitle">완료 · 12/12 제출</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge success">완료</span>
+          <span class="chev">›</span>
+        </div>
+      </div>
+
+      <div class="list-row">
+        <div class="lr-thumb" style="background:var(--tds-surface-alt);color:var(--tds-fg-secondary);width:36px;height:36px;font-size:14px;">12</div>
+        <div class="lr-content">
+          <div class="lr-title">12회차 · Hermes 엔진</div>
+          <div class="lr-subtitle">완료 · 10/12 제출</div>
+        </div>
+        <div class="lr-right">
+          <span class="badge success">완료</span>
+          <span class="chev">›</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BottomCTA: 새 회차 만들기 -->
+  <div class="bottom-cta">
+    <button class="btn primary">+ 새 회차 만들기</button>
+  </div>
+</div>
+</body>
+</html>

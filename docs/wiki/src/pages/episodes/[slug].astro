@@ -1,0 +1,88 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const episodes = await getCollection('episodes');
+  return episodes.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<BaseLayout
+  title={entry.data.title}
+  subtitle={`${entry.data.type} · ${entry.data.status}`}
+>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;">
+    <span class={`badge badge--${entry.data.status}`}>{entry.data.status}</span>
+    <span class="badge">{entry.data.type}</span>
+    {entry.data.tags.map((tag) => <span class="badge">#{tag}</span>)}
+  </div>
+
+  <table style="margin-bottom: 24px;">
+    <tr>
+      <th style="width: 140px;">시작</th>
+      <td>{new Date(entry.data.startedAt).toLocaleString('ko-KR')}</td>
+    </tr>
+    {entry.data.shippedAt && (
+      <tr>
+        <th>완료</th>
+        <td>{new Date(entry.data.shippedAt).toLocaleString('ko-KR')}</td>
+      </tr>
+    )}
+    {entry.data.sessionIds.length > 0 && (
+      <tr>
+        <th>세션</th>
+        <td><code>{entry.data.sessionIds.join(', ')}</code></td>
+      </tr>
+    )}
+    {entry.data.relatedDecisions.length > 0 && (
+      <tr>
+        <th>관련 결정</th>
+        <td>
+          {entry.data.relatedDecisions.map((id, i) => (
+            <Fragment>
+              {i > 0 && ', '}
+              <a href={`/decisions/${id}`}>{id}</a>
+            </Fragment>
+          ))}
+        </td>
+      </tr>
+    )}
+    {entry.data.linearIssue && (
+      <tr>
+        <th>Linear</th>
+        <td>{entry.data.linearIssue}</td>
+      </tr>
+    )}
+    {entry.data.githubPR && (
+      <tr>
+        <th>PR</th>
+        <td>{entry.data.githubPR}</td>
+      </tr>
+    )}
+  </table>
+
+  {entry.data.touchedFiles.length > 0 && (
+    <details style="margin-bottom: 24px;">
+      <summary style="cursor: pointer; font-weight: 500;">
+        수정된 파일 ({entry.data.touchedFiles.length})
+      </summary>
+      <ul style="margin-top: 8px; padding-left: 20px;">
+        {entry.data.touchedFiles.map((f) => <li><code>{f}</code></li>)}
+      </ul>
+    </details>
+  )}
+
+  <article class="prose">
+    <Content />
+  </article>
+
+  <hr style="margin: 40px 0; border: none; border-top: 1px solid var(--color-border);" />
+  <a href="/episodes">← 에피소드 목록</a>
+</BaseLayout>

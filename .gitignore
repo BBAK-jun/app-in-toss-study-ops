@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Cloudflare / Wrangler
+.wrangler/
+.dev.vars
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Playwright MCP artifacts (browser automation logs)
+.playwright-mcp/
+
+# Orca runtime sessions (large, regenerated per session)
+.omo/run-continuation/
+
+# Root-level QA screenshots (moved to docs/wiki/public/qa/legacy/)
+/qa-*.png
+/screen-*.png
+/od-*.png
+/open-design-*.png
+
+# TypeScript
+*.tsbuildinfo
