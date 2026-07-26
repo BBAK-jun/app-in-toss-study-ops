@@ -12,7 +12,7 @@ import type { StudyDto } from '@studyops/shared';
 
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { ApiError } from '../api/client';
+import { ApiError } from '../lib/api-client';
 import { useStudiesQuery } from '../query/studyQueries';
 import { usePageLayout } from '../layout/PageLayoutContext';
 import { openCreateStudyModal } from '../ui/CreateStudyModal/openCreateStudyModal';

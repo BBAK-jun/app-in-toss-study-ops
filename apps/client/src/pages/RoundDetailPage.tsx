@@ -4,7 +4,7 @@ import { BottomCTA, Button, ListHeader, ListRow, Paragraph, Spacing } from '@tos
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { RateBadge, rateBadgeColor } from '../components/RateBadge';
-import { ApiError } from '../api/client';
+import { ApiError } from '../lib/api-client';
 import { useRoundStatusQuery } from '../query/roundQueries';
 import { usePageLayout } from '../layout/PageLayoutContext';
 

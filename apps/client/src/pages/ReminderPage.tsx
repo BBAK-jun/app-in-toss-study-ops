@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { BottomCTA, Button, Modal, Paragraph, Spacing, useToast } from '@toss/tds-mobile';
 
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { ApiError } from '../api/client';
+import { ApiError } from '../lib/api-client';
 import { useReminderMessageMutation, useShareDiscordMutation } from '../query/roundQueries';
 
 export function ReminderPage() {

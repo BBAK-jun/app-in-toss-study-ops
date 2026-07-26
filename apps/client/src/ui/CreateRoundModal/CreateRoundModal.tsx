@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button, Modal, Paragraph, Spacing, TextField } from '@toss/tds-mobile';
 import type { RoundDto } from '@studyops/shared';
 
-import { ApiError } from '../../api/client';
+import { ApiError } from '../../lib/api-client';
 import { useCreateRoundMutation } from '../../query/studyQueries';
 
 export type CreateRoundModalResult = Pick<RoundDto, 'id'>;

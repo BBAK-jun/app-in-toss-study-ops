@@ -4,7 +4,7 @@ import type { LogLevel, LogRow, LogSource } from '@studyops/shared';
 import { LOG_LEVELS } from '@studyops/shared';
 
 import { ErrorBoundary } from '../../components/ErrorBoundary';
-import { ApiError } from '../../api/client';
+import { ApiError } from '../../lib/api-client';
 import { useLogsInfiniteQuery, useInvalidateLogs } from '../../query/logQueries';
 
 const LEVEL_COLORS: Record<LogLevel, string> = {

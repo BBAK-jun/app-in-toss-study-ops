@@ -26,6 +26,9 @@ importers:
       '@emotion/react':
         specifier: ^11.13.0
         version: 11.14.0(@types/react@18.3.31)(react@18.3.1)
+      '@studyops/client-sdk':
+        specifier: workspace:*
+        version: link:../../packages/client-sdk
       '@studyops/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -131,6 +134,12 @@ importers:
       typescript:
         specifier: ^5.6.0
         version: 5.9.3
+
+  packages/client-sdk:
+    dependencies:
+      '@studyops/shared':
+        specifier: workspace:*
+        version: link:../shared
 
   packages/shared: {}
 
@@ -17537,7 +17546,7 @@ snapshots:
 
   metro-runtime@0.76.8:
     dependencies:
-      '@babel/runtime': 7.29.7
+      '@babel/runtime': 7.28.4
       react-refresh: 0.4.3
 
   metro-source-map@0.72.3:

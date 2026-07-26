@@ -2,9 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { appLogin } from '@apps-in-toss/web-framework';
 import { BottomCTA, Paragraph, Spacing, TextField } from '@toss/tds-mobile';
-
-import { login } from '../api/auth';
-import { setToken, ApiError } from '../api/client';
+import { apiClient, ApiError } from '../lib/api-client';
 import { useSession } from '../hooks/useSession';
 import { APP_META } from '../constants';
 import { isDevBuild, BUILD_INFO } from '../lib/build-info';
@@ -38,8 +36,8 @@ export function LoginPage() {
         referrer = authResult.referrer;
       }
 
-      const { sessionToken, user } = await login(authorizationCode, referrer);
-      setToken(sessionToken);
+      const { sessionToken, user } = await apiClient.auth.login(authorizationCode, referrer);
+      apiClient.setToken(sessionToken);
       setUser(user);
       navigate('/', { replace: true });
     } catch (e) {

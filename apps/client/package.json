@@ -21,6 +21,7 @@
   "dependencies": {
     "@apps-in-toss/web-framework": "^2.10.5",
     "@emotion/react": "^11.13.0",
+    "@studyops/client-sdk": "workspace:*",
     "@studyops/shared": "workspace:*",
     "@tanstack/react-query": "^5.101.4",
     "@toss/tds-mobile": "^2.5.0",

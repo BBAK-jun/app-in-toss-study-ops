@@ -14,13 +14,7 @@ import type {
   SubmissionDto,
 } from '@studyops/shared';
 
-import {
-  createSubmission,
-  getReminderMessage,
-  getRoundStatus,
-  listSubmissions,
-  shareDiscord,
-} from '../api/rounds';
+import { apiClient } from '../lib/api-client';
 import { roundKeys, studyKeys } from './queryKeys';
 
 // ──────────────────────────────────────────────────────────────
@@ -30,7 +24,7 @@ import { roundKeys, studyKeys } from './queryKeys';
 export function useRoundStatusQuery(roundId: string): UseQueryResult<RoundStatusDto> {
   return useQuery({
     queryKey: roundKeys.status(roundId),
-    queryFn: () => getRoundStatus(roundId),
+    queryFn: () => apiClient.rounds.getStatus(roundId),
     enabled: roundId !== '',
   });
 }
@@ -38,7 +32,7 @@ export function useRoundStatusQuery(roundId: string): UseQueryResult<RoundStatus
 export function useRoundSubmissionsQuery(roundId: string): UseQueryResult<SubmissionDto[]> {
   return useQuery({
     queryKey: roundKeys.submissions(roundId),
-    queryFn: () => listSubmissions(roundId),
+    queryFn: () => apiClient.rounds.listSubmissions(roundId),
     enabled: roundId !== '',
   });
 }
@@ -58,7 +52,7 @@ export function useRoundSubmissionsQuery(roundId: string): UseQueryResult<Submis
 export function useCreateSubmissionMutation(roundId: string, studyId?: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: SubmissionCreateInput) => createSubmission(roundId, input),
+    mutationFn: (input: SubmissionCreateInput) => apiClient.rounds.createSubmission(roundId, input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: roundKeys.status(roundId) });
       if (studyId) {
@@ -73,7 +67,7 @@ export function useCreateSubmissionMutation(roundId: string, studyId?: string) {
  */
 export function useReminderMessageMutation(roundId: string) {
   return useMutation({
-    mutationFn: (options?: ReminderOptions) => getReminderMessage(roundId, options),
+    mutationFn: (options?: ReminderOptions) => apiClient.rounds.getReminderMessage(roundId, options),
   });
 }
 
@@ -82,7 +76,7 @@ export function useReminderMessageMutation(roundId: string) {
  */
 export function useShareDiscordMutation(roundId: string) {
   return useMutation({
-    mutationFn: (body?: ShareDiscordRequest) => shareDiscord(roundId, body),
+    mutationFn: (body?: ShareDiscordRequest) => apiClient.rounds.shareDiscord(roundId, body),
   });
 }
 
@@ -93,8 +87,8 @@ export function useShareDiscordMutation(roundId: string) {
 export function useShareReminderMutation(roundId: string) {
   return useMutation({
     mutationFn: async (): Promise<ShareDiscordResponse> => {
-      const reminder: ReminderMessageResponse = await getReminderMessage(roundId);
-      return shareDiscord(roundId, { message: reminder.message });
+      const reminder: ReminderMessageResponse = await apiClient.rounds.getReminderMessage(roundId);
+      return apiClient.rounds.shareDiscord(roundId, { message: reminder.message });
     },
   });
 }

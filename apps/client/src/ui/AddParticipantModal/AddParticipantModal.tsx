@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button, Modal, Paragraph, Spacing, TextField, useToast } from '@toss/tds-mobile';
 
-import { ApiError } from '../../api/client';
+import { ApiError } from '../../lib/api-client';
 import { useAddParticipantMutation } from '../../query/studyQueries';
 
 type AddParticipantModalProps = {

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { OverlayAsyncControllerComponent } from 'overlay-kit';
 import { Button, Modal, Paragraph, Spacing, TextField, useToast } from '@toss/tds-mobile';
 
-import { ApiError } from '../../api/client';
+import { ApiError } from '../../lib/api-client';
 import { useCreateStudyMutation } from '../../query/studyQueries';
 
 export const CreateStudyModal: OverlayAsyncControllerComponent<void> = ({ isOpen, close }) => {

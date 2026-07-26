@@ -13,7 +13,7 @@ import {
 
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { ApiError } from '../api/client';
+import { ApiError } from '../lib/api-client';
 import {
   useRemoveParticipantMutation,
   useRoundSummariesQuery,

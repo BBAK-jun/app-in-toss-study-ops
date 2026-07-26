@@ -13,8 +13,8 @@ import {
 
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { ApiError } from '../api/client';
-import { listParticipants } from '../api/studies';
+import { ApiError } from '../lib/api-client';
+import { apiClient } from '../lib/api-client';
 import { useRoundStatusQuery, useCreateSubmissionMutation } from '../query/roundQueries';
 import { useQuery } from '@tanstack/react-query';
 import { studyKeys } from '../query/queryKeys';
@@ -31,7 +31,7 @@ export function SubmissionCreatePage() {
 
   const { data: participants } = useQuery({
     queryKey: studyKeys.participants(studyId),
-    queryFn: () => listParticipants(studyId),
+    queryFn: () => apiClient.studies.listParticipants(studyId),
     enabled: studyId !== '',
   });
 

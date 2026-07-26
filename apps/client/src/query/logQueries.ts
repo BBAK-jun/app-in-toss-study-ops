@@ -5,14 +5,14 @@
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import type { LogQuery } from '@studyops/shared';
 
-import { fetchLogs } from '../api/logs';
+import { apiClient } from '../lib/api-client';
 import { logKeys } from './queryKeys';
 
 export function useLogsInfiniteQuery(params: Omit<LogQuery, 'cursor'>) {
   return useInfiniteQuery({
     queryKey: logKeys.list(params),
     queryFn: ({ pageParam }: { pageParam?: string }) =>
-      fetchLogs({ ...params, cursor: pageParam }),
+      apiClient.logs.fetch({ ...params, cursor: pageParam }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
