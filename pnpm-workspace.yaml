@@ -1,0 +1,16 @@
+packages:
+  - 'packages/*'
+  - 'apps/*'
+  - 'docs/wiki'
+
+# pnpm 10+ 은 postinstall/preinstall 스크립트를 기본 차단함.
+# Vite, Wrangler, Astro, TDS Mobile의 네이티브 바이너리 빌드를 허용 목록으로 승인.
+# 참고: https://pnpm.io/settings#onlybuiltdependencies
+onlyBuiltDependencies:
+  - esbuild
+  - workerd
+  - '@swc/core'
+  - sharp
+  - protobufjs
+  - core-js-pure
+  - '@sentry/cli'
