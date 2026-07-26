@@ -10,8 +10,7 @@ import {
 } from '@toss/tds-mobile';
 import { AppShell } from '../components/AppShell';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { ApiError } from '../api/client';
-import { getReminderMessage, shareDiscord } from '../api/rounds';
+import { apiClient, ApiError } from '../lib/api-client';
 
 // 리마인드/공유(문서 4-5): POST /reminder-message → 문구 표시 + 복사(Toast)
 // + BottomCTA(Discord로 보내기) → POST /share-discord.
@@ -32,7 +31,7 @@ export function ReminderPage() {
     (async () => {
       setError(null);
       try {
-        const res = await getReminderMessage(roundId);
+        const res = await apiClient.rounds.getReminderMessage(roundId);
         if (active) setMessage(res.message);
       } catch (e) {
         if (active) setError(e instanceof ApiError ? e.message : '리마인드 문구를 만들지 못했어요.');
@@ -59,7 +58,7 @@ export function ReminderPage() {
     setSending(true);
     setError(null);
     try {
-      await shareDiscord(roundId);
+      await apiClient.rounds.shareDiscord(roundId);
       setConfirmOpen(false);
       openToast('Discord로 보냈어요.');
     } catch (e) {

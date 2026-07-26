@@ -6,8 +6,7 @@ import { AppShell } from '../components/AppShell';
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { RateBadge, rateBadgeColor } from '../components/RateBadge';
-import { ApiError } from '../api/client';
-import { getRoundStatus } from '../api/rounds';
+import { apiClient, ApiError } from '../lib/api-client';
 
 // 회차 상세(MVP 핵심, 문서 4-5): GET /rounds/:id/status
 // 제출률 Badge + 제출자(URL 링크) + 미제출자 + 리마인드/공유 BottomCTA.
@@ -20,7 +19,7 @@ export function RoundDetailPage() {
   const refresh = useCallback(async () => {
     setError(null);
     try {
-      setStatus(await getRoundStatus(roundId));
+      setStatus(await apiClient.rounds.getStatus(roundId));
     } catch (e) {
       setError(e instanceof ApiError ? e.message : '회차 현황을 불러오지 못했어요.');
     }

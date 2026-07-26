@@ -64,3 +64,14 @@ export interface ShareDiscordResponse {
   ok: true;
   discordResponse?: unknown;
 }
+
+// GET /studies/:id/rounds/status Response — 회차별 제출률 배치 조회.
+export interface RoundSummary {
+  roundId: string;
+  roundNumber: number;
+  title: string;
+  dueAt: number | null;
+  submittedCount: number;
+  total: number;
+  rate: number;
+}

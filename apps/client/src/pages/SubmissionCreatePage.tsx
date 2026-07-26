@@ -14,9 +14,7 @@ import type { ParticipantDto } from '@studyops/shared';
 import { AppShell } from '../components/AppShell';
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { ApiError } from '../api/client';
-import { listParticipants } from '../api/studies';
-import { createSubmission, getRoundStatus } from '../api/rounds';
+import { apiClient, ApiError } from '../lib/api-client';
 
 // 제출 등록(문서 4-5): 참여자 선택 + TextField(URL) + POST /rounds/:id/submissions.
 // 회차의 studyId 를 알기 위해 /rounds/:id/status 를 먼저 조회(또는 참여자 목록을 studyId 로).
@@ -39,7 +37,7 @@ export function SubmissionCreatePage() {
     (async () => {
       setError(null);
       try {
-        const status = await getRoundStatus(roundId);
+        const status = await apiClient.rounds.getStatus(roundId);
         if (!active) return;
         // 회차 현황의 submitted(참여자)를 통해 studyId 와 이미 제출한 사람 파악.
         const studyId =
@@ -48,7 +46,7 @@ export function SubmissionCreatePage() {
           '';
         setSubmittedIds(new Set(status.submitted.map((s) => s.participant.id)));
         if (studyId) {
-          const all = await listParticipants(studyId);
+          const all = await apiClient.studies.listParticipants(studyId);
           if (active) setParticipants(all);
         } else {
           if (active) setParticipants([]);
@@ -69,7 +67,7 @@ export function SubmissionCreatePage() {
     setSubmitting(true);
     setError(null);
     try {
-      await createSubmission(roundId, {
+      await apiClient.rounds.createSubmission(roundId, {
         participantId: selectedId,
         url: url.trim(),
         note: note.trim() || undefined,

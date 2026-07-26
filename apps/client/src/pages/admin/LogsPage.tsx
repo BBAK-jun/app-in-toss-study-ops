@@ -5,8 +5,7 @@ import type { LogLevel, LogQuery, LogQueryResult, LogRow, LogSource } from '@stu
 import { LOG_LEVELS } from '@studyops/shared';
 import { AppShell } from '../../components/AppShell';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
-import { ApiError } from '../../api/client';
-import { fetchLogs } from '../../api/logs';
+import { apiClient, ApiError } from '../../lib/api-client';
 
 const LEVEL_COLORS: Record<LogLevel, string> = {
   debug: '#8B95A1',
@@ -47,7 +46,7 @@ export function LogsPage() {
     setError(null);
     setLoading(true);
     try {
-      const result = await fetchLogs(buildQuery());
+      const result = await apiClient.logs.fetch(buildQuery());
       setData(result);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : '로그를 불러오지 못했어요.');
@@ -64,7 +63,7 @@ export function LogsPage() {
     if (!data?.nextCursor) return;
     setLoadingMore(true);
     try {
-      const result = await fetchLogs(buildQuery(data.nextCursor));
+      const result = await apiClient.logs.fetch(buildQuery(data.nextCursor));
       setData((prev) => ({
         logs: [...(prev?.logs ?? []), ...result.logs],
         nextCursor: result.nextCursor,
