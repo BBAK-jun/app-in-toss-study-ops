@@ -1,0 +1,162 @@
+// OpenCode 프로젝트 구성
+// 이 파일은 OpenCode가 프로젝트별로 동작 방식을 결정합니다
+
+{
+  // 프로젝트 식별자
+  "$schema": "https://opencode.ai/schema/project-config.jsonc",
+  "name": "StudyOps Bot",
+
+  // 세션 훅 — 세션 시작/종료 시 자동 실행
+  "hooks": {
+    // 세션 시작 전: HARNESS.md 로드 + 컨텍스트 설정
+    "pre-session": {
+      "enabled": true,
+      "actions": [
+        {
+          "type": "read",
+          "path": "HARNESS.md",
+          "description": "Load execution contract context"
+        },
+        {
+          "type": "echo",
+          "message": "📋 HARNESS.md loaded — Current Sprint: S2, MVP 1차 완료 → 하네스 환경 구축"
+        }
+      ]
+    },
+
+    // 세션 종료 후: 에피소드 페이지 작성 유도
+    "post-session": {
+      "enabled": true,
+      "actions": [
+        {
+          "type": "echo",
+          "message": "💡 Remember to create episode page: docs/wiki/src/content/episodes/YYYY-MM-DD-<slug>.md"
+        },
+        {
+          "type": "echo",
+          "message": "💡 Then run: npm run wiki:index"
+        }
+      ]
+    }
+  },
+
+  // 스킬 라우팅 — 작업 유형별 자동 스킬 로드
+  "skillRouting": {
+    "enabled": true,
+    "rules": [
+      {
+        "triggers": ["wrangler", "Workers", "D1", "KV", "R2", "deploy"],
+        "load": ["wrangler", "workers-best-practices"]
+      },
+      {
+        "triggers": ["DO", "durable", "object", "alarm", "websocket", "coordination"],
+        "load": ["durable-objects"]
+      },
+      {
+        "triggers": ["Agent", "RPC", "workflow", "agents-sdk"],
+        "load": ["agents-sdk"]
+      },
+      {
+        "triggers": ["Tunnel", "WAF", "Pages", "email", "cloudflare"],
+        "load": ["cloudflare", "cloudflare-email-service"]
+      },
+      {
+        "triggers": ["component", "style", "page", "UI", "design", "redesign"],
+        "load": [],
+        "category": "visual-engineering"
+      },
+      {
+        "triggers": ["looks right", "screenshot", "visual", "QA"],
+        "load": ["visual-qa"]
+      },
+      {
+        "triggers": ["Lighthouse", "LCP", "INP", "CLS", "performance"],
+        "load": ["web-perf"]
+      },
+      {
+        "triggers": ["security", "vulnerability", "auth", "취약점"],
+        "load": ["security-research"]
+      },
+      {
+        "triggers": ["broken", "error", "bug", "fix", "debug"],
+        "load": ["debugging"]
+      },
+      {
+        "triggers": ["commit", "rebase", "bisect", "git"],
+        "load": ["git-master"]
+      },
+      {
+        "triggers": ["slop", "cleanup", "refactor", "AI-generated"],
+        "load": ["remove-ai-slops"]
+      },
+      {
+        "triggers": ["plan", "design", "architecture"],
+        "load": ["harness"],
+        "useMetis": true
+      }
+    ]
+  },
+
+  // MCP 서버 강제 사용
+  "mcpWhitelist": {
+    "codegraph": {
+      "description": "Symbol/reference exploration — ALWAYS use before editing existing symbols",
+      "enforced": true
+    },
+    "context7": {
+      "description": "External library docs — use when unfamiliar with API/package",
+      "enforced": false
+    },
+    "playwright": {
+      "description": "Browser automation / QA screenshots",
+      "enforced": false
+    },
+    "linear": {
+      "description": "Issue/PR tracking (Phase 2)",
+      "enforced": false
+    },
+    "notion": {
+      "description": "Wiki document creation/updates",
+      "enforced": false
+    }
+  },
+
+  // 금지된 작업
+  "forbiddenActions": [
+    {
+      "pattern": "as any",
+      "description": "Type safety violation — use type guards instead"
+    },
+    {
+      "pattern": "@ts-ignore",
+      "description": "Type safety violation — NEVER suppress TypeScript errors"
+    },
+    {
+      "pattern": "localStorage",
+      "description": "Toss policy violation — use sessionStorage only"
+    },
+    {
+      "pattern": "wrangler deploy",
+      "description": "Deployment requires explicit approval"
+    },
+    {
+      "pattern": "git push",
+      "description": "Git push requires explicit approval"
+    }
+  ],
+
+  // 세션 상태 저장소
+  "sessionState": {
+    "enabled": true,
+    "path": ".omo/run-continuation",
+    "autoIndex": true
+  },
+
+  // 위키 통합
+  "wiki": {
+    "enabled": true,
+    "path": "docs/wiki",
+    "collections": ["episodes", "decisions", "sessions", "qa", "changelog"],
+    "indexScript": "npm run wiki:index"
+  }
+}
