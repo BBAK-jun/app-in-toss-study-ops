@@ -35,6 +35,8 @@ export default defineConfig({
       '/auth': { target: 'http://localhost:8787', changeOrigin: true, bypass: spaBypass },
       '/studies': { target: 'http://localhost:8787', changeOrigin: true, bypass: spaBypass },
       '/rounds': { target: 'http://localhost:8787', changeOrigin: true, bypass: spaBypass },
+      '/logs': { target: 'http://localhost:8787', changeOrigin: true, bypass: spaBypass },
+      '/admin': { target: 'http://localhost:8787', changeOrigin: true, bypass: spaBypass },
     },
   },
   build: {
