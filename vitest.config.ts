@@ -16,7 +16,15 @@ export default defineConfig({
       'packages/shared/src/**/*.test.ts',
       'apps/client/src/**/*.test.{ts,tsx}',
     ],
-    exclude: ['node_modules/**', 'dist/**', '.wrangler/**'],
+    exclude: [
+      'node_modules/**',
+      'dist/**',
+      '.wrangler/**',
+      // pool-workers 전용 테스트는 별도 환경 필요 (@cloudflare/vitest-pool-workers)
+      'apps/server/src/middleware/cors.test.ts',
+      'apps/server/src/middleware/rate-limit.test.ts',
+      'apps/server/src/routes/health.test.ts',
+    ],
     setupFiles: ['./vitest.setup.ts'],
     globals: false,
     coverage: {
