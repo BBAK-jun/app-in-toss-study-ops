@@ -12,7 +12,7 @@
  *
  * Phase 2에서 Linear/GitHub/Discord 연동이 추가되면 별도 스크립트로 확장.
  *
- * 사용: npm run index  (docs/wiki/ 안에서)
+ * 사용: pnpm run index  (docs/wiki/ 안에서)
  */
 import { readdir, readFile, writeFile, mkdir, copyFile, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -223,7 +223,7 @@ async function main(): Promise<void> {
   console.log(`   ✅ ${qa.copied}개 파일 복사, ${qa.indexed}개 메타데이터 생성`);
 
   console.log('');
-  console.log('✨ 완료. `npm run dev` 로 위키를 확인하세요.');
+  console.log('✨ 완료. `pnpm run dev` 로 위키를 확인하세요.');
 }
 
 main().catch((err) => {

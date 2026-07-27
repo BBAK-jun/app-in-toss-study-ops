@@ -17,7 +17,7 @@ const episodes = defineCollection({
     // 필수
     id: z.string(),
     title: z.string(),
-    type: z.enum(['feature', 'bug', 'refactor', 'docs', 'infra', 'qa', 'server']),
+    type: z.enum(['feature', 'bug', 'refactor', 'docs', 'infra', 'qa', 'server', 'client']),
     status: z.enum(['planned', 'in-progress', 'review', 'shipped', 'cancelled']),
     startedAt: isoTimestamp,
     // 옵셔널

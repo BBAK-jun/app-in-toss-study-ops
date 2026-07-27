@@ -12,7 +12,7 @@ studyops-bot/
 ├── package.json              # 루트 — turbo 실행 + 패키지 매니저(pnpm) 명시
 ├── pnpm-workspace.yaml       # 워크스페이스 목록 + 네이티브 빌드 허용 목록
 ├── turbo.json                # 작업 파이프라인 정의 (build/typecheck/test/dev/deploy)
-├── .npmrc                    # pnpm 설정 (apps-in-toss 호환성을 위해 hoisted)
+├── .npmrc                    # pnpm 설정 (public-hoist-pattern for apps-in-toss)
 ├── tsconfig.base.json        # 공유 TS 설정 + @studyops/shared 경로 별칭
 ├── docs/                     # PRD, 아키텍처 문서, 위키(Astro)
 ├── packages/

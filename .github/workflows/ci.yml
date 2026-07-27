@@ -25,18 +25,18 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 10.33.2
 
-      - name: Setup Node.js 22
+      - name: Setup Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Turbo가 의존성 그래프에 따라 shared → server/client 순서로 자동 빌드.
+      # Turbo가 의존성 그래프에 따라 shared → client-sdk → server/client 순서로 자동 빌드.
       # 캐시 적중 시 건너뛰며, --filter=^... 옵션 불필요.
       - name: Turbo typecheck + build + test (cached)
         run: pnpm turbo typecheck build test

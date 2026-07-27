@@ -3,15 +3,23 @@
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "turbo run dev --parallel",
     "dev:client": "turbo run dev --filter=studyops-client",
     "dev:server": "turbo run dev --filter=studyops-server",
     "dev:server:prod-preview": "pnpm --filter studyops-server dev:prod-preview",
+    "dev:log-server": "turbo run dev --filter=studyops-log-server",
+    "dev:admin-client": "turbo run dev --filter=studyops-admin-client",
     "build": "turbo run build",
     "build:shared": "turbo run build --filter=@studyops/shared",
+    "build:client-sdk": "turbo run build --filter=@studyops/client-sdk",
     "build:server": "turbo run build --filter=studyops-server",
     "build:client": "turbo run build --filter=studyops-client",
+    "build:log-server": "turbo run build --filter=studyops-log-server",
+    "build:admin-client": "turbo run build --filter=studyops-admin-client",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "types:server": "pnpm --filter studyops-server types",

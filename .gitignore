@@ -57,3 +57,6 @@ backups/
 
 # Backup files
 *.bak
+
+# Turborepo
+.turbo

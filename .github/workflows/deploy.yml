@@ -37,12 +37,12 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 10.33.2
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
 
       - name: Install dependencies
@@ -51,7 +51,6 @@ jobs:
       - name: Turbo build + typecheck (cached)
         run: pnpm turbo build typecheck
         env:
-          # Remote Cache — secrets 미등록 시 자동으로 로컬 캐시만 사용.
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 

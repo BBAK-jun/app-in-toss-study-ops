@@ -8,7 +8,7 @@
 #   3. 로그 파일은 유지 (사용자가 확인할 수 있도록)
 #
 # 사용:
-#   npm run wiki:uninstall-daemon
+#   pnpm wiki:uninstall-daemon
 #   ./scripts/uninstall-daemon.sh
 #
 set -euo pipefail
