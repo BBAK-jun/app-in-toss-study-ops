@@ -1,14 +1,16 @@
 // 클라이언트 로그 수집 라우트 — POST /logs (authMiddleware 통과 후 마운트).
 //
-// 클라이언트가 batch로 모은 로그를 수신 → 검증 → D1 batch INSERT.
+// 클라이언트가 batch로 모은 로그를 수신 → 검증 → AE write + D1 batch INSERT.
 // 202 Accepted 반환 (비동기 처리의 의미론적 표현).
 //
 // ADR-011: D1 writes/day 한도 보호를 위해 100 entries/batch 제한.
+// ADR-013: AE는 샘플링 없이 전수 적재 (Tier 2).
 
 import { Hono } from 'hono';
 import type { AppEnv } from '../env';
 import { HttpError } from '../lib/http-error';
 import { insertLogBatch } from '../lib/logger';
+import { writeLogDataPoints } from '../lib/analytics';
 import type { LogEntry, LogBatchPayload, LogEvent, LogLevel, LogSource } from '@studyops/shared';
 import {
   LOG_EVENTS,
@@ -79,6 +81,10 @@ logRoutes.post('/', async (c) => {
     });
   }
 
+  // Tier 2: AE — 샘플링 없이 전수. non-blocking (ADR-013).
+  writeLogDataPoints(c.env.LOGS_ANALYTICS, validated);
+
+  // Tier 3: D1 batch INSERT — waitUntil로 비동기.
   c.executionCtx.waitUntil(
     insertLogBatch(c.env.DB, validated).catch((err: unknown) => {
       console.error(

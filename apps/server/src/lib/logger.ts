@@ -1,4 +1,9 @@
-// 서버 로거 — ADR-011 3계층 로깅(Tier 1 console + Tier 2 D1 + Discord 알림).
+// 서버 로거 — ADR-011 + ADR-013 4계층 로깅.
+//
+//   Tier 1: console.log                       → Workers Logs (3일, 무료)
+//   Tier 2: env.LOGS_ANALYTICS.writeDataPoint → AE (항상, 샘플링 없이 — ADR-013)
+//   Tier 3: ctx.waitUntil(insertLog)          → D1 (샘플링 유지, 상세/검색용)
+//   Tier 4: error/fatal → Discord webhook
 //
 // 사용법:
 //   import { log } from '../lib/logger';
@@ -6,7 +11,8 @@
 //
 // 설계:
 // - Tier 1(console)은 항상 실행 — Workers Logs에 3일 보관.
-// - Tier 2(D1)는 샘플링 통과시 executionCtx.waitUntil로 비동기 INSERT. 응답 블록 X.
+// - Tier 2(AE)도 항상 실행 — 샘플링 없이. non-blocking.
+// - Tier 3(D1)는 샘플링 통과시 executionCtx.waitUntil로 비동기 INSERT. 응답 블록 X.
 // - error/fatal은 Discord webhook으로 전송 (DISCORD_WEBHOOK_DEFAULT가 있을 때).
 // - PII sanitize: 화이트리스트 기반. 허용되지 않은 context 키는 [REDACTED] 치환.
 
@@ -22,6 +28,7 @@ import {
   LOG_LEVEL_WEIGHT,
 } from '@studyops/shared';
 import type { AppEnv } from '../env';
+import { writeLogDataPoint } from './analytics';
 
 // ─── 공개 입력 타입 ────────────────────────────────────────────────────────
 // LogEntry에서 서버가 자동 채우는 필드(ts, source 기본값, env, requestId, userId)는
@@ -49,6 +56,7 @@ export interface LogEntryInput {
 // ─── LogContext (Hono Context에서 추출한 로깅 의존성) ──────────────────────
 export interface LogContext {
   db: D1Database;
+  analytics?: AnalyticsEngineDataset;
   executionCtx: { waitUntil(promise: Promise<unknown>): void };
   env: 'dev' | 'production';
   requestId?: string;
@@ -60,6 +68,7 @@ export interface LogContext {
 export function buildLogContext(c: Context<AppEnv>): LogContext {
   return {
     db: c.env.DB,
+    analytics: c.env.LOGS_ANALYTICS,
     executionCtx: c.executionCtx,
     env: c.env.ENVIRONMENT === 'production' ? 'production' : 'dev',
     requestId: c.get('requestId'),
@@ -108,7 +117,12 @@ export function logWithContext(ctx: LogContext, input: LogEntryInput): void {
         : 'log';
   console[consoleFn](JSON.stringify(entry));
 
-  // Tier 2: D1 INSERT — 샘플링 통과시 waitUntil로 비동기.
+  // Tier 2: Analytics Engine — 항상. 샘플링 없이. non-blocking (ADR-013).
+  if (ctx.analytics) {
+    writeLogDataPoint(ctx.analytics, entry);
+  }
+
+  // Tier 3: D1 INSERT — 샘플링 통과시 waitUntil로 비동기.
   if (shouldSample(entry, ctx.env)) {
     ctx.executionCtx.waitUntil(
       insertLog(ctx.db, entry).catch((err: unknown) => {
