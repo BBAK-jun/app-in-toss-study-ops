@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Turborepo
+.turbo/
+
 # Build output
 dist/
 build/
@@ -54,3 +57,6 @@ backups/
 
 # Backup files
 *.bak
+
+# Turborepo
+.turbo

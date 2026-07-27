@@ -34,27 +34,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10.33.2
 
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build shared package
-        run: pnpm build:shared
-
-      - name: Build client-sdk package
-        run: pnpm build:client-sdk
-
-      - name: Typecheck
-        run: pnpm typecheck
+      - name: Turbo build + typecheck (cached)
+        run: pnpm turbo build typecheck
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
       - name: Pre-deploy secrets check
         working-directory: apps/server
@@ -67,9 +65,9 @@ jobs:
         working-directory: apps/server
         run: |
           if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            pnpm run deploy:production
+            pnpm deploy:production
           else
-            pnpm run deploy
+            pnpm deploy
           fi
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
