@@ -159,12 +159,40 @@ Free tier로 충분.
 
 AE SQL API로 외부에서 집계 쿼리. Worker 내부 route에서 Cloudflare API token으로 호출.
 
+#### 필수 secrets/vars
+
+| 변수 | 종류 | dev | prod | 설명 |
+|---|---|---|---|---|
+| `CLOUDFLARE_ACCOUNT_ID` | wrangler.jsonc `vars` | ✓ (자동) | ✓ (자동) | Cloudflare 계정 ID |
+| `CF_API_TOKEN` | secret (`wrangler secret put`) | optional | **필수** | AE SQL API 호출용 Bearer 토큰 |
+
+`CF_API_TOKEN` 발급 절차:
+
+1. Cloudflare Dashboard → **My Profile → API Tokens → Create Token**
+2. **Create Custom Token** 선택 (preset 아님 — 최소 권한)
+3. Permissions: **Account > Account Analytics : Read**
+4. Account Resources: **Include → Specific account → 본인 계정**
+5. TTL: 기본(무제한) 또는 필요시 만료일 지정
+6. 생성 후 토큰 값 복사 (한 번만 노출)
+
+등록:
+
 ```bash
-# Phase 3에서 CF_API_TOKEN secret 추가 예정 (Account Analytics read 권한)
-# npx wrangler secret put CF_API_TOKEN --env production
+# dev — 로컬 .dev.vars 에만 (AE reads를 테스트하려는 경우)
+echo "CF_API_TOKEN=<token>" >> .dev.vars
+
+# prod — wrangler secret
+npx wrangler secret put CF_API_TOKEN --env production
 ```
 
 엔드포인트: `https://api.cloudflare.com/client/v4/accounts/<account_id>/analytics_engine/sql`
+
+#### 보안 참고
+
+- 토큰은 AE read 권한만 가지므로, 유출되어도 D1 데이터 노출 위험 없음 (D1은 별도 binding).
+- `CF_API_TOKEN`는 환경 변수로 Worker에 주입되나 클라이언트 응답에는 절대 노출되지 않음
+  (`/admin/logs/metrics` 응답은 집계 row만 반환).
+- 토큰 교체 필요시 `wrangler secret put CF_API_TOKEN --env production` 재실행 (덮어쓰기).
 
 #### 메트릭 API 엔드포인트
 
