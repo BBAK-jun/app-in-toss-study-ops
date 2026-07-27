@@ -1,32 +1,37 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useSession } from './hooks/useSession';
-import { LoginPage } from './pages/LoginPage';
-import { StudiesPage } from './pages/StudiesPage';
-import { StudyDetailPage } from './pages/StudyDetailPage';
-import { RoundDetailPage } from './pages/RoundDetailPage';
-import { SubmissionCreatePage } from './pages/SubmissionCreatePage';
-import { ReminderPage } from './pages/ReminderPage';
-import { NotFoundPage } from './pages/NotFoundPage';
-import { LogsPage } from './pages/admin/LogsPage';
+import { RouterProvider } from '@tanstack/react-router';
+import { NuqsAdapter } from 'nuqs/adapters/tanstack-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { OverlayProvider } from 'overlay-kit';
+import { TDSMobileAITProvider } from '@toss/tds-mobile-ait';
 
-// 인증 필요 라우트 래퍼 — user 가 없으면 /login 로 이동.
-function Protected({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useSession();
-  if (loading) return null; // 세션 복원 중에는 렌더 지연 (추후 스플래시로 대체)
-  return user ? <>{children}</> : <Navigate to="/login" replace />;
-}
+import { router } from './router/router';
+import { SessionProvider } from './context/SessionContext';
+import { RuntimeEnvironmentProvider } from './runtime/RuntimeEnvironment';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/" element={<Protected><StudiesPage /></Protected>} />
-      <Route path="/studies/:studyId" element={<Protected><StudyDetailPage /></Protected>} />
-      <Route path="/rounds/:roundId" element={<Protected><RoundDetailPage /></Protected>} />
-      <Route path="/rounds/:roundId/submit" element={<Protected><SubmissionCreatePage /></Protected>} />
-      <Route path="/rounds/:roundId/reminder" element={<Protected><ReminderPage /></Protected>} />
-      <Route path="/admin/logs" element={<Protected><LogsPage /></Protected>} />
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+    <TDSMobileAITProvider>
+      <RuntimeEnvironmentProvider>
+        <QueryClientProvider client={queryClient}>
+          <OverlayProvider>
+            <SessionProvider>
+              <NuqsAdapter>
+                <RouterProvider router={router} />
+              </NuqsAdapter>
+            </SessionProvider>
+          </OverlayProvider>
+        </QueryClientProvider>
+      </RuntimeEnvironmentProvider>
+    </TDSMobileAITProvider>
   );
 }

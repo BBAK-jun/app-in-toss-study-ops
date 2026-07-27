@@ -1,0 +1,89 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "stream",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "public/**",
+        "package.json",
+        "tsconfig.json",
+        "vite.config.ts",
+        "vite-plugins/**",
+        "wrangler.jsonc",
+        "granite.config.ts",
+        "astro.config.mjs",
+        "drizzle.config.ts"
+      ],
+      "outputs": ["dist/**", ".astro/**", ".wrangler/types/**"],
+      "outputLogs": "new-only"
+    },
+    "typecheck": {
+      "dependsOn": ["^build", "^typecheck"],
+      "inputs": ["src/**", "package.json", "tsconfig.json", "worker-configuration.d.ts"],
+      "outputLogs": "new-only"
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "test/**",
+        "tests/**",
+        "package.json",
+        "vitest.config.ts"
+      ],
+      "outputLogs": "new-only"
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "preview": {
+      "cache": false,
+      "persistent": true
+    },
+    "deploy": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "deploy:production": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "deploy:dev": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "deploy:prod": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "types": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "db:generate": {
+      "cache": false
+    },
+    "db:apply:dev": {
+      "cache": false
+    },
+    "db:apply:prod": {
+      "cache": false
+    },
+    "db:list": {
+      "cache": false
+    },
+    "secrets:check": {
+      "cache": false
+    },
+    "index": {
+      "cache": false
+    },
+    "watch": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

@@ -37,7 +37,7 @@
   - [x] `.omo/run-continuation/` 세션 10개 자동 인덱싱
   - [x] 루트 `qa-*.png` 13개 파일 구조화 → `public/qa/legacy/`
   - [x] MVP 1차 결정 4개 ADR로 분해 (Cloudflare, Toss auth, 모노레포, 하네스)
-  - [x] `npm run wiki:{dev,build,index}` 스크립트 등록
+  - [x] `pnpm wiki:{dev,build,index}` 스크립트 등록
 - **완료된 것** (환경 분리 + D1 격리 + CI/CD, 7/26):
   - [x] `wrangler.toml` → `wrangler.jsonc` 마이그레이션 + `env.production` 블록
   - [x] D1 인스턴스 2개 운영 (dev/prod 격리, prod D1 마이그레이션 적용 완료)
@@ -50,7 +50,7 @@
   - [x] `/mcp` 엔드포인트 + Bearer token 인증 (`MCP_API_TOKEN`)
   - [x] boot-check prod 검증 (MCP_API_TOKEN 필수)
   - [x] ADR-010 (agents-sdk + MCP SDK + zod3 의존성 결정)
-  - [x] zod v3/v4 공존 (agents는 v4 peer dep, MCP SDK는 v3 — npm alias `zod3`로 해결)
+  - [x] zod v3/v4 공존 (agents는 v4 peer dep, MCP SDK는 v3 — npm alias `zod3`로 해결, pnpm에서도 동일 문법 지원)
 - **다음 우선순위**:
   1. 파일럿 사용자 1명 확보 (앱인토스 내부 스터디)
   2. GitHub Actions Secrets 등록 (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID)
@@ -244,9 +244,9 @@ githubPR: null       # Phase 2
 - **수동 위키 페이지 작성 금지 영역**: `sessions/`, `changelog/` (자동 생성됨)
 
 위키 사이트:
-- 로컬 미리보기: `npm run wiki:dev` (루트에서)
-- 빌드: `npm run wiki:build` → `docs/wiki/dist/`
-- 인덱싱 (세션·QA 동기화): `npm run wiki:index`
+- 로컬 미리보기: `pnpm wiki:dev` (루트에서)
+- 빌드: `pnpm wiki:build` → `docs/wiki/dist/`
+- 인덱싱 (세션·QA 동기화): `pnpm wiki:index`
 
 ---
 
@@ -259,7 +259,7 @@ githubPR: null       # Phase 2
 3. **§3 규칙 확인** — 작업 유형에 맞는 스킬·MCP 로드
 4. **필요시 Metis 상담** — 복잡하거나 모호한 요청
 5. **구현** — 위키 에피소드 초안을 먼저 `episodes/`에 작성 (목적 명확화)
-6. **검증** — `npm run typecheck`, 관련 테스트, QA 스크린샷 (UI 변경 시)
+6. **검증** — `pnpm typecheck`, 관련 테스트, QA 스크린샷 (UI 변경 시)
 7. **위키 업데이트** — 에피소드 status → `shipped`, 검증 결과 첨부
 8. **(선택) ADR** — 결정이 ARCHITECTURE에서 벗어나면 기록
 

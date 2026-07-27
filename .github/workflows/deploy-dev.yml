@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # CI 게이트 — 타입체크 + 빌드 통과해야 배포 진행
+  # CI 게이트 — Turbo가 typecheck + build를 캐싱과 함께 실행
   verify:
     name: Typecheck & Build
     runs-on: ubuntu-latest
@@ -26,14 +26,18 @@ jobs:
       passed: ${{ steps.check.outputs.passed }}
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build:shared
-      - run: npm run typecheck
-      - run: npm run build
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo typecheck build
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       - id: check
         run: echo "passed=true" >> "$GITHUB_OUTPUT"
 
@@ -45,15 +49,22 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build:shared
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Turbo build가 shared → server 순서로 자동 처리
+      - run: pnpm turbo build --filter=studyops-server...
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       - name: Deploy Worker (dev)
         working-directory: apps/server
-        run: npx wrangler deploy
+        run: pnpm exec wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -66,12 +77,19 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build:shared
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Turbo가 shared + client-sdk + client 의존성을 자동 빌드
+      - run: pnpm turbo build --filter=studyops-client...
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
       - name: Write ait credentials
         run: |
@@ -85,7 +103,7 @@ jobs:
 
       - name: Build & Deploy client (dev)
         working-directory: apps/client
-        run: npm run deploy:dev
+        run: pnpm deploy:dev
         env:
           VITE_APP_ENV: development
           VITE_API_BASE_URL: https://studyops-server.mountain-race.workers.dev

@@ -6,10 +6,10 @@ StudyOps Bot MVP 의 Apps-in-Toss WebView 클라이언트. Vite + React 18 + `@t
 
 ```bash
 # 루트에서 최초 1회
-npm install
+pnpm install
 
 # 개발 서버 (포트 5173) — apps/server(wrangler dev, 8787) 와 함께 띄운다.
-npm run dev -w apps/client
+pnpm dev:client
 ```
 
 ## 환경변수
@@ -37,5 +37,5 @@ npm run dev -w apps/client
 ## 빌드
 
 ```bash
-npm run build -w apps/client   # tsc --noEmit && vite build → dist/
+pnpm build:client   # tsc --noEmit && vite build → dist/
 ```

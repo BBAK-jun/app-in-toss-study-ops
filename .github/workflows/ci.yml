@@ -22,26 +22,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 22
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
+
+      - name: Setup Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
+          node-version: 24
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      - name: Build shared package
-        run: npm run build:shared
-
-      - name: Typecheck all workspaces
-        run: npm run typecheck
-
-      - name: Run server tests
-        run: npm run test:server
-
-      - name: Build all workspaces
-        run: npm run build
+      # Turbo가 의존성 그래프에 따라 shared → client-sdk → server/client 순서로 자동 빌드.
+      # 캐시 적중 시 건너뛰며, --filter=^... 옵션 불필요.
+      - name: Turbo typecheck + build + test (cached)
+        run: pnpm turbo typecheck build test
+        env:
+          # Remote Cache (Vercel) — secrets 미등록 시 자동으로 로컬 캐시만 사용.
+          # 설정 방법은 README "Remote Cache 설정" 섹션 참조.
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
       - name: Wrangler types check
-        run: npm run types:server
+        run: pnpm types:server
