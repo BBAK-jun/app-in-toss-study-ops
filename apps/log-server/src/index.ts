@@ -51,8 +51,8 @@ app.route('/admin/logs/metrics', adminLogMetricsRoutes);
 app.get('/health', (c) => c.json({ ok: true, ts: Date.now() }));
 
 export default {
-  async fetch(request: Request, env: AppEnv['Bindings']): Promise<Response> {
-    return app.fetch(request, env);
+  async fetch(request: Request, env: AppEnv['Bindings'], ctx: ExecutionContext): Promise<Response> {
+    return app.fetch(request, env, ctx);
   },
 
   async scheduled(
