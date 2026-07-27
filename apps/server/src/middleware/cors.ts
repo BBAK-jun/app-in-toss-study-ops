@@ -23,11 +23,7 @@ function pickAllowedOrigin(
 }
 
 export const corsMiddleware: MiddlewareHandler<AppEnv> = async (c, next) => {
-  const requestOrigin = c.req.header('Origin');
-  const allowedOrigin = pickAllowedOrigin(requestOrigin, c.env);
-
-  // TEMP DEBUG: diagnose why CORS headers missing on deployed Worker
-  c.header('X-CORS-Debug', JSON.stringify({ env: c.env.ENVIRONMENT ?? 'UNSET', origin: requestOrigin ?? 'NONE', allowed: allowedOrigin ?? 'NULL' }));
+  const allowedOrigin = pickAllowedOrigin(c.req.header('Origin'), c.env);
 
   if (c.req.method === 'OPTIONS') {
     if (allowedOrigin) {
