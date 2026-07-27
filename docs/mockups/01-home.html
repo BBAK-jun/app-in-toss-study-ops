@@ -33,89 +33,70 @@
 
   <!-- Screen body -->
   <div class="screen">
-    <!-- Top -->
-    <div class="top">
-      <h1 class="top-title">내 스터디</h1>
-      <div class="top-subtitle">운영 중인 스터디 3개</div>
-    </div>
-
-    <!-- 이번 주 제출 현황 요약 카드 -->
-    <div class="progress-card">
-      <div class="pc-label">이번 주 제출률</div>
-      <div class="pc-rate">68<span class="denom">%</span></div>
-      <div class="progress-bar"><div class="fill" style="width:68%"></div></div>
-      <div style="font-size:13px;color:var(--tds-blue);margin-top:8px;">미제출자 7명에게 리마인드를 보낼 수 있어요</div>
+    <!-- HeroCard: 미제출자 집계 + 리마인드 CTA -->
+    <div class="progress-card" style="background:linear-gradient(135deg, var(--tds-blue-tint), var(--tds-surface-alt)); padding:24px 20px;">
+      <div style="font-size:15px;font-weight:600;color:var(--tds-fg-secondary);margin-bottom:4px;">리마인드가 필요해요</div>
+      <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px;">
+        <span style="font-size:42px;font-weight:800;color:var(--tds-blue);line-height:1;">7</span>
+        <span style="font-size:16px;color:var(--tds-fg-secondary);">명</span>
+      </div>
+      <div style="font-size:13px;color:var(--tds-fg-secondary);margin-bottom:16px;">3개 스터디에서 미제출</div>
+      <button class="btn primary" style="width:100%;">리마인드 보내기</button>
     </div>
 
     <!-- 스터디 목록 -->
-    <div class="section" style="margin-top:20px;">
-      <div class="list-header">진행 중</div>
+    <div class="section" style="margin-top:24px;">
+      <div class="list-header">내 스터디</div>
 
+      <!-- 알고리즘 스터디: 미제출 있음, 60% -->
       <div class="list-row">
-        <div class="lr-thumb">RN</div>
-        <div class="lr-content">
-          <div class="lr-title">리액트 네이티브 스터디</div>
-          <div class="lr-subtitle">15회차 · 12명 참여</div>
-        </div>
-        <div class="lr-right">
-          <span class="badge warn">3명 미제출</span>
-          <span class="chev">›</span>
-        </div>
-      </div>
-
-      <div class="list-row">
-        <div class="lr-thumb" style="background:var(--tds-success-tint);color:var(--tds-success);">알</div>
         <div class="lr-content">
           <div class="lr-title">알고리즘 스터디</div>
-          <div class="lr-subtitle">8회차 · 8명 참여</div>
+          <div class="lr-subtitle">2명 미제출 · 3회차 · 2일 이내</div>
         </div>
         <div class="lr-right">
-          <span class="badge success">전원 제출</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:28px;border-radius:8px;font-size:13px;font-weight:700;background:#fee2e2;color:#dc2626;">60%</span>
           <span class="chev">›</span>
         </div>
       </div>
 
+      <!-- CS 면접 스터디: 전원 제출, 100% -->
       <div class="list-row">
-        <div class="lr-thumb" style="background:var(--tds-warn-tint);color:var(--tds-warn);">글</div>
         <div class="lr-content">
-          <div class="lr-title">글쓰기 모임</div>
-          <div class="lr-subtitle">5회차 · 6명 참여</div>
+          <div class="lr-title">CS 면접 스터디</div>
+          <div class="lr-subtitle">전원 제출 · 2회차 · 2일 이내</div>
         </div>
         <div class="lr-right">
-          <span class="badge danger">마감 임박</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:28px;border-radius:8px;font-size:13px;font-weight:700;background:#dcfce7;color:#16a34a;">100%</span>
+          <span class="chev">›</span>
+        </div>
+      </div>
+
+      <!-- 글쓰기 모임: 미제출 있음, 40% -->
+      <div class="list-row">
+        <div class="lr-content">
+          <div class="lr-title">글쓰기 모임</div>
+          <div class="lr-subtitle">3명 미제출 · 5회차 · 오늘 마감</div>
+        </div>
+        <div class="lr-right">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:28px;border-radius:8px;font-size:13px;font-weight:700;background:#fee2e2;color:#dc2626;">40%</span>
           <span class="chev">›</span>
         </div>
       </div>
     </div>
 
-    <!-- 빠른 실행 -->
-    <div class="section">
-      <div class="list-header">빠른 실행</div>
+    <!-- 스터디 만들기 -->
+    <div class="section" style="margin-top:20px;">
       <div class="list-row">
         <div class="lr-thumb" style="background:var(--tds-blue-tint);color:var(--tds-blue);">+</div>
         <div class="lr-content">
-          <div class="lr-title">새 스터디 만들기</div>
-          <div class="lr-subtitle">제출 운영을 시작해요</div>
-        </div>
-        <div class="lr-right"><span class="chev">›</span></div>
-      </div>
-      <div class="list-row">
-        <div class="lr-thumb" style="background:var(--tds-surface-alt);color:var(--tds-fg-secondary);">🔔</div>
-        <div class="lr-content">
-          <div class="lr-title">오늘 보낼 리마인드</div>
-          <div class="lr-subtitle">3개 스터디 · 7명</div>
+          <div class="lr-title">스터디 만들기</div>
         </div>
         <div class="lr-right"><span class="chev">›</span></div>
       </div>
     </div>
   </div>
 
-  <!-- 플로팅 탭바 (TDS 가이드: 2~5개 탭, 플로팅 형태) -->
-  <div class="tab-bar">
-    <button class="tab active">스터디</button>
-    <button class="tab">리마인드</button>
-    <button class="tab">설정</button>
-  </div>
 </div>
 </body>
 </html>
