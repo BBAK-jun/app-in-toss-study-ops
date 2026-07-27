@@ -78,6 +78,7 @@ export const LOG_EVENTS = {
   INFRA_MIGRATION_FAILED: 'infra.migration.failed',
   INFRA_CRON_COMPLETED: 'infra.cron.completed',
   INFRA_LOG_RETENTION_RUN: 'infra.log.retention_run',
+  INFRA_LOG_ARCHIVE_RUN: 'infra.log.archive_run',
   INFRA_HTTP_CLIENT_ERROR: 'infra.http.client_error',
   INFRA_HTTP_SERVER_ERROR: 'infra.http.server_error',
 

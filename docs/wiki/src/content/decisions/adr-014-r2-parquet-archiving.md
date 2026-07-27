@@ -1,7 +1,7 @@
 ---
 id: adr-014
 title: R2 + Parquet 장기 보관 — D1 보관 만료 로그 영구 아카이빙
-status: proposed
+status: accepted
 date: 2026-07-27
 supersededBy: null
 tags: [server, observability, r2, parquet, duckdb, archive, long-term-storage]
@@ -281,17 +281,21 @@ AE는 3개월 이내 집계, R2는 3개월 이전 원시 데이터. 대시보드
 
 ADR-013과 동일한 phase 방식. 각 phase 독립적 롤백 가능.
 
-### Phase 1 — 기반 인프라 (1일)
-- R2 버킷 2개 생성: `studyops-log-archive-dev`, `studyops-log-archive-prod`
-- `wrangler.jsonc` 양쪽 환경에 `r2_buckets` binding 추가
-- Boot-check에 R2 바인딩 존재 검증 추가
-- ADR-013 README에 Phase 5 링크 추가
+### Phase 1 — 기반 인프라 ✅
+- R2 버킷 2개 생성: `studyops-log-archive-dev`, `studyops-log-archive-prod` (수동 생성 필요)
+- `wrangler.jsonc` 양쪽 환경에 `r2_buckets` binding 추가 ✅
+- Boot-check에 R2 바인딩 존재 검증 추가 ✅ (`r2Archive: configured|missing`)
+- ADR-013 README에 Phase 5 링크 추가 ✅
 
-### Phase 2 — JSONL 아카이빙 (2~3일)
-- `apps/server/src/lib/archive.ts` 신규 — `serializeRows(rows): Uint8Array`
-- `apps/server/src/cron/retention.ts`에 아카이빙 스텝 추가 (D1 삭제 전)
-- 단위 테스트 (Workers 환경에서 R2 PUT, JSONL 직렬화, 실패 재시도)
-- dev 환경에서 1주일 검증 — 파일 크기, 복구 가능성, CPU 시간 측정
+### Phase 2 — JSONL 아카이빙 ✅
+- `apps/server/src/lib/archive.ts` 신규 — `serializeRowsToJsonl()`, `buildR2Key()`, `archiveBatch()` ✅
+- `apps/server/src/lib/retention.ts`에 아카이빙 스텝 추가 (D1 삭제 전) ✅
+  - `archiveAndDeleteOldLogs()`: SELECT → R2 PUT → DELETE by IDs 순서 보장
+  - R2 실패시 D1 삭제 수행 안 함 (데이터 손실 방지)
+  - fatal 레벨은 아카이브 제외 (ADR-014 §3)
+  - R2 바인딩 누락시 graceful degradation (직접 DELETE)
+- 단위 테스트 (12개: archive.test.ts) + retention.test.ts 업데이트 ✅
+- dev 환경 검증 — 버킷 수동 생성 후 cron 트리거로 확인 필요
 
 ### Phase 3 — Parquet 마이그레이션 (2~3일)
 - `parquet-wasm` 패키지 추가
