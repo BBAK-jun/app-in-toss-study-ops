@@ -1,11 +1,9 @@
 // CORS 화이트리스트 미들웨어 — ENVIRONMENT 기반 origin 결정. ADR-011.
 // prod: ALLOWED_ORIGINS var (콤마 구분) 에서 읽어 매칭되는 origin만 허용. 미설정 시 모든 cross-origin 차단.
-// dev: localhost 하드코딩 (Vite 5173, wrangler 8787). ALLOWED_ORIGINS 무시.
+// dev: 모든 origin 허용 (localhost, 앱인토스 WebView 등). ALLOWED_ORIGINS 무시.
 // same-origin 요청은 Origin 헤더가 없으므로 자동 통과 (allowedOrigin=null → 헤더 미추가).
 import type { MiddlewareHandler } from 'hono';
 import type { AppEnv } from '../env';
-
-const DEV_ORIGINS = new Set(['http://localhost:5173', 'http://localhost:8787']);
 
 function pickAllowedOrigin(
   requestOrigin: string | undefined,
@@ -20,7 +18,8 @@ function pickAllowedOrigin(
     return allowed.includes(requestOrigin) ? requestOrigin : null;
   }
 
-  return DEV_ORIGINS.has(requestOrigin) ? requestOrigin : null;
+  // dev: 모든 origin 허용 (에코백)
+  return requestOrigin;
 }
 
 export const corsMiddleware: MiddlewareHandler<AppEnv> = async (c, next) => {
