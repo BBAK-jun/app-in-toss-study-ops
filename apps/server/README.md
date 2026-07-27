@@ -4,13 +4,13 @@ Toss 앱인토스 스터디 운영 자동화 API 서버.
 
 ## 환경
 
-| 환경 | Worker 이름 | D1 DB | 인증 모드 | 배포 방식 |
-|---|---|---|---|---|
-| **dev** (기본) | `studyops-server` | `studyops-db-dev` (UUID a0459919...) | `TOSS_AUTH_MODE=dev` | `wrangler deploy` |
-| **production** | `studyops-server-production` | `studyops-db-prod` (UUID ae6a0663...) | `TOSS_AUTH_MODE=live` (강제) | `wrangler deploy --env production` |
+| 환경 | Worker 이름 | D1 DB | Analytics Engine | 인증 모드 | 배포 방식 |
+|---|---|---|---|---|---|
+| **dev** (기본) | `studyops-server` | `studyops-db-dev` (UUID a0459919...) | `studyops_logs_dev` | `TOSS_AUTH_MODE=dev` | `wrangler deploy` |
+| **production** | `studyops-server-production` | `studyops-db-prod` (UUID ae6a0663...) | `studyops_logs_prod` | `TOSS_AUTH_MODE=live` (강제) | `wrangler deploy --env production` |
 
-dev는 로컬 개발 및 QA용. prod은 실사용자용. D1 인스턴스가 완전히 분리되어 있으므로
-dev에서 마이그레이션/데이터 조작을 해도 prod에 영향 없음.
+dev는 로컬 개발 및 QA용. prod은 실사용자용. D1 인스턴스와 AE dataset 모두 완전히
+분리되어 있으므로 dev에서 마이그레이션/데이터 조작을 해도 prod에 영향 없음.
 
 ## 설정
 
@@ -110,6 +110,62 @@ node scripts/secrets-check.mjs         # dev 확인
 node scripts/secrets-check.mjs production  # prod 확인
 ```
 
+## Analytics Engine (OLAP 메트릭 계층)
+
+Cloudflare Workers Analytics Engine(AE)이 `LOGS_ANALYTICS` binding으로 연결되어 있다.
+자세한 설계는 [ADR-013](../wiki/src/content/decisions/adr-013-analytics-engine-olap-tier.md) 참조.
+
+### 역할
+
+- **D1** (`logs` 테이블): 상세 row 보관, 전문 검색, 장기 보관 (ADR-011)
+- **AE** (`studyops_logs_*` dataset): 시계열 집계, 제품 분석 메트릭, 빠른 카운트 쿼리
+
+D1이 row-store라 OLAP 집계에 부적합한 한계를 보완.
+
+### Setup (Phase 1)
+
+AE dataset은 **첫 `writeDataPoint()` 호출 시 자동 생성** — 별도 `wrangler analytics-engine` 생성
+명령 불필요. wrangler.jsonc에 binding 선언만으로 충분:
+
+```jsonc
+"analytics_engine_datasets": [
+  { "binding": "LOGS_ANALYTICS", "dataset": "studyops_logs_dev" }
+]
+```
+
+설정 변경 후 타입 재생성:
+
+```bash
+npm run types:server    # wrangler types — LOGS_ANALYTICS: AnalyticsEngineDataset 가 Env에 자동 추가
+```
+
+부팅 시 `logBootInfo`가 AE binding 상태를 `analyticsEngine: configured|missing`으로 로깅.
+AE는 non-critical best-effort 메트릭이므로 fail-fast 검사 대상이 아님.
+
+### Limits (Free tier)
+
+| 자원 | Free tier | 비고 |
+|---|---|---|
+| Data points written | 100,000/day | `writeDataPoint()` 1회 호출 = 1 data point |
+| Read queries (SQL API) | 10,000/day | ADR-013 Phase 3에서 사용 |
+| 보관 기간 | 3개월 (고정) | 장기 보관은 D1 + 향후 R2 파이프라인 |
+| 필드 제한 | 1 index + 20 blobs + 20 doubles | per data point |
+| Blob 총 크기 | 16 KB | per data point |
+
+Workers Paid($5/mo) 전환 시 10M data points/월 + $0.25/M 추가. 본 프로젝트 트래픽에서는
+Free tier로 충분.
+
+### Query (Phase 3 — 미구현)
+
+AE SQL API로 외부에서 집계 쿼리. Worker 내부 route에서 Cloudflare API token으로 호출.
+
+```bash
+# Phase 3에서 CF_API_TOKEN secret 추가 예정 (Account Analytics read 권한)
+# npx wrangler secret put CF_API_TOKEN --env production
+```
+
+엔드포인트: `https://api.cloudflare.com/client/v4/accounts/<account_id>/analytics_engine/sql`
+
 ## MCP 서버 (Sisyphus agent용)
 
 `/mcp` 경로에 MCP(Model Context Protocol) 서버가 통합되어 있음 (ADR-010).
@@ -155,7 +211,7 @@ src/
 ├── mcp/                  # MCP 서버 (StudyOpsMcpAgent DO, read-only tools). ADR-010.
 ├── auth/                 # Toss OAuth2 / JWT 인증
 ├── db/                   # Drizzle 스키마 + 마이그레이션
-├── lib/                  # 공통 유틸리티 (HttpError, response helpers)
+├── lib/                  # 공통 유틸리티 (HttpError, response helpers, logger)
 ├── middleware/           # Hono 미들웨어 (error, auth guard)
 ├── routes/               # Hono 라우트 그룹
 └── services/             # 비즈니스 로직 (option: bot, study, etc.)
@@ -163,3 +219,6 @@ src/
 
 D1 연결은 wrangler 바인딩 (`c.env.DB`)으로 자동 주입됨.
 로컬 개발 시 `.wrangler/state/v3/d1/` 의 sqlite 파일 사용.
+
+Analytics Engine도 wrangler 바인딩 (`c.env.LOGS_ANALYTICS`)으로 주입됨.
+dataset은 첫 write 시 자동 생성됨. ADR-013 Phase 1은 binding 선언만으로 완료.

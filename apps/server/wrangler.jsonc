@@ -26,6 +26,16 @@
     }
   ],
 
+  // Analytics Engine — OLAP metric tier (ADR-013). Free tier: 100k data points/day.
+  // Dataset auto-created on first write. dev/prod 격리 by dataset name.
+  // The binding exposes `writeDataPoint()` — non-blocking, no waitUntil needed.
+  "analytics_engine_datasets": [
+    {
+      "binding": "LOGS_ANALYTICS",
+      "dataset": "studyops_logs_dev"
+    }
+  ],
+
   // Observability for logging + wrangler tail. See ADR-008.
   "observability": {
     "enabled": true,
@@ -67,6 +77,14 @@
           "database_name": "studyops-db-prod",
           "database_id": "ae6a0663-e1f8-4fe6-96d5-64c2b335c673",
           "migrations_dir": "src/db/migrations"
+        }
+      ],
+
+      // Prod Analytics Engine dataset — ADR-013. Isolated from dev.
+      "analytics_engine_datasets": [
+        {
+          "binding": "LOGS_ANALYTICS",
+          "dataset": "studyops_logs_prod"
         }
       ],
       "observability": {

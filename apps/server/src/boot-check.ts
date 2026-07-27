@@ -7,6 +7,10 @@
 //  2. SESSION_SECRET 누락 또는 약한 키 (<32 chars) → JWT 서명 보호
 //  3. ENVIRONMENT=production 인데 DB binding 이 dev UUID → D1 격리 검증 (ADR-007)
 //
+// AE(LOGS_ANALYTICS) 바인딩은 wrangler.jsonc에 의해 보장되므로 fail-fast 검사에서
+// 제외. 대신 logBootInfo에 상태를 노출하여 가시성만 확보 (ADR-013 — AE writes는
+// non-critical best-effort 메트릭이므로 누락시 Worker가 동작해야 함).
+//
 // 실패 시 즉시 throw — Worker는 부팅되지 않고 500 응답. wrangler tail 로 즉시 관측 가능.
 
 import type { AppEnv } from './env';
@@ -85,6 +89,7 @@ export function logBootInfo(env: AppEnv['Bindings']): void {
       environment: env.ENVIRONMENT,
       authMode: env.TOSS_AUTH_MODE,
       tossApiBase: env.TOSS_API_BASE_URL,
+      analyticsEngine: env.LOGS_ANALYTICS ? 'configured' : 'missing',
     }),
   );
 }
