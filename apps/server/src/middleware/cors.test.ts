@@ -45,12 +45,12 @@ describe('corsMiddleware — dev environment', () => {
     expect(res.headers.get('Access-Control-Allow-Origin')).toBe('http://localhost:8787');
   });
 
-  it('blocks unknown origin', async () => {
+  it('allows any origin in dev (echoes back)', async () => {
     const res = await createApp().fetch(
       new Request('http://localhost/', { headers: { Origin: 'https://evil.com' } }),
       makeEnv(),
     );
-    expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('https://evil.com');
   });
 
   it('passes through same-origin (no Origin header)', async () => {
@@ -77,7 +77,7 @@ describe('corsMiddleware — dev environment', () => {
     expect(res.headers.get('Access-Control-Max-Age')).toBe('86400');
   });
 
-  it('rejects OPTIONS preflight from unknown origin (no ACAO header)', async () => {
+  it('handles OPTIONS preflight from any origin in dev', async () => {
     const res = await createApp().fetch(
       new Request('http://localhost/', {
         method: 'OPTIONS',
@@ -86,7 +86,7 @@ describe('corsMiddleware — dev environment', () => {
       makeEnv(),
     );
     expect(res.status).toBe(204);
-    expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('https://evil.com');
   });
 });
 
