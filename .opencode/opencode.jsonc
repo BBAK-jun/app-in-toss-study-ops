@@ -1,162 +1,45 @@
-// OpenCode 프로젝트 구성
-// 이 파일은 OpenCode가 프로젝트별로 동작 방식을 결정합니다
+// OpenCode 프로젝트 구성 — StudyOps Bot
+// 이 파일은 OpenCode가 프로젝트별로 동작 방식을 결정합니다.
+//
+// 참고: 이전 버전의 opencode.jsonc에는 OpenCode가 인식하지 못하는 커스텀 키
+// (name, hooks, skillRouting, mcpWhitelist, forbiddenActions, sessionState, wiki)가
+// 포함되어 있어 설정 검증 오류가 발생했습니다. 해당 커스텀 메타데이터는
+// project-conventions.md 로 분리 보존했으며, 아래에는 OpenCode 스키마에 맞는
+// 유효한 키만 남겼습니다. 원본은 opencode.jsonc.bak 로 백업되어 있습니다.
 
 {
-  // 프로젝트 식별자
-  "$schema": "https://opencode.ai/schema/project-config.jsonc",
-  "name": "StudyOps Bot",
+  "$schema": "https://opencode.ai/config.json",
 
-  // 세션 훅 — 세션 시작/종료 시 자동 실행
-  "hooks": {
-    // 세션 시작 전: HARNESS.md 로드 + 컨텍스트 설정
-    "pre-session": {
-      "enabled": true,
-      "actions": [
-        {
-          "type": "read",
-          "path": "HARNESS.md",
-          "description": "Load execution contract context"
-        },
-        {
-          "type": "echo",
-          "message": "📋 HARNESS.md loaded — Current Sprint: S2, MVP 1차 완료 → 하네스 환경 구축"
-        }
-      ]
-    },
-
-    // 세션 종료 후: 에피소드 페이지 작성 유도
-    "post-session": {
-      "enabled": true,
-      "actions": [
-        {
-          "type": "echo",
-          "message": "💡 Remember to create episode page: docs/wiki/src/content/episodes/YYYY-MM-DD-<slug>.md"
-        },
-        {
-          "type": "echo",
-          "message": "💡 Then run: npm run wiki:index"
-        }
-      ]
-    }
-  },
-
-  // 스킬 라우팅 — 작업 유형별 자동 스킬 로드
-  "skillRouting": {
-    "enabled": true,
-    "rules": [
-      {
-        "triggers": ["wrangler", "Workers", "D1", "KV", "R2", "deploy"],
-        "load": ["wrangler", "workers-best-practices"]
-      },
-      {
-        "triggers": ["DO", "durable", "object", "alarm", "websocket", "coordination"],
-        "load": ["durable-objects"]
-      },
-      {
-        "triggers": ["Agent", "RPC", "workflow", "agents-sdk"],
-        "load": ["agents-sdk"]
-      },
-      {
-        "triggers": ["Tunnel", "WAF", "Pages", "email", "cloudflare"],
-        "load": ["cloudflare", "cloudflare-email-service"]
-      },
-      {
-        "triggers": ["component", "style", "page", "UI", "design", "redesign"],
-        "load": [],
-        "category": "visual-engineering"
-      },
-      {
-        "triggers": ["looks right", "screenshot", "visual", "QA"],
-        "load": ["visual-qa"]
-      },
-      {
-        "triggers": ["Lighthouse", "LCP", "INP", "CLS", "performance"],
-        "load": ["web-perf"]
-      },
-      {
-        "triggers": ["security", "vulnerability", "auth", "취약점"],
-        "load": ["security-research"]
-      },
-      {
-        "triggers": ["broken", "error", "bug", "fix", "debug"],
-        "load": ["debugging"]
-      },
-      {
-        "triggers": ["commit", "rebase", "bisect", "git"],
-        "load": ["git-master"]
-      },
-      {
-        "triggers": ["slop", "cleanup", "refactor", "AI-generated"],
-        "load": ["remove-ai-slops"]
-      },
-      {
-        "triggers": ["plan", "design", "architecture"],
-        "load": ["harness"],
-        "useMetis": true
-      }
-    ]
-  },
-
-  // MCP 서버 강제 사용
-  "mcpWhitelist": {
-    "codegraph": {
-      "description": "Symbol/reference exploration — ALWAYS use before editing existing symbols",
-      "enforced": true
-    },
-    "context7": {
-      "description": "External library docs — use when unfamiliar with API/package",
-      "enforced": false
-    },
-    "playwright": {
-      "description": "Browser automation / QA screenshots",
-      "enforced": false
-    },
-    "linear": {
-      "description": "Issue/PR tracking (Phase 2)",
-      "enforced": false
-    },
-    "notion": {
-      "description": "Wiki document creation/updates",
-      "enforced": false
-    }
-  },
-
-  // 금지된 작업
-  "forbiddenActions": [
-    {
-      "pattern": "as any",
-      "description": "Type safety violation — use type guards instead"
-    },
-    {
-      "pattern": "@ts-ignore",
-      "description": "Type safety violation — NEVER suppress TypeScript errors"
-    },
-    {
-      "pattern": "localStorage",
-      "description": "Toss policy violation — use sessionStorage only"
-    },
-    {
-      "pattern": "wrangler deploy",
-      "description": "Deployment requires explicit approval"
-    },
-    {
-      "pattern": "git push",
-      "description": "Git push requires explicit approval"
-    }
+  // 프로젝트 수준 지시어 — 에이전트가 매 세션마다 참조
+  "instructions": [
+    "Read .opencode/project-conventions.md for project workflow rules, skill routing, and forbidden actions.",
+    "HARNESS.md is the execution contract — load it at session start for current sprint context.",
+    "Never use 'as any', '@ts-ignore', or 'localStorage'. Use type guards, fix TS errors, and use sessionStorage.",
+    "Deployment (`wrangler deploy`) and `git push` require explicit user approval.",
+    "Use the `codegraph` MCP server before editing existing symbols."
   ],
 
-  // 세션 상태 저장소
-  "sessionState": {
-    "enabled": true,
-    "path": ".omo/run-continuation",
-    "autoIndex": true
+  // MCP 서버 — 화이트리스트는 project-conventions.md 참고
+  "mcp": {
+    "codegraph": {
+      "enabled": true
+    },
+    "context7": {
+      "enabled": true
+    },
+    "playwright": {
+      "enabled": true
+    }
   },
 
-  // 위키 통합
-  "wiki": {
-    "enabled": true,
-    "path": "docs/wiki",
-    "collections": ["episodes", "decisions", "sessions", "qa", "changelog"],
-    "indexScript": "npm run wiki:index"
-  }
+  // 도구 권한 — 위험한 작업은 확인 후 실행
+  "permission": {
+    "bash": {
+      "wrangler deploy": "ask",
+      "git push": "ask"
+    }
+  },
+
+  // 스냅샷 자동 저장
+  "snapshot": true
 }
