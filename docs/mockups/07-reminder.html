@@ -27,90 +27,47 @@
   </div>
 
   <div class="screen">
-    <div class="top">
-      <h1 class="top-title">미제출자 3명에게 보내요</h1>
-      <div class="top-subtitle">15회차 · 마감 2일 전</div>
-    </div>
-
     <!-- 받는 사람 -->
     <div class="section">
-      <div class="list-header">받는 사람</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;padding:8px 0 4px;">
-        <span class="badge blue">김지연 ×</span>
-        <span class="badge blue">박성민 ×</span>
-        <span class="badge blue">이정훈 ×</span>
-      </div>
-      <div style="font-size:12px;color:var(--tds-muted);padding:0 0 8px;">눌러서 제외해요</div>
-    </div>
-
-    <!-- 문구 톤 선택 -->
-    <div class="section">
-      <div class="list-header">문구 톤</div>
-      <div style="display:flex;gap:8px;padding:8px 0 4px;flex-wrap:wrap;">
-        <button class="badge blue" style="padding:8px 14px;font-size:13px;">친근하게</button>
-        <button class="badge" style="padding:8px 14px;font-size:13px;">정중하게</button>
-        <button class="badge" style="padding:8px 14px;font-size:13px;">짧고 명확하게</button>
+      <div class="list-header">받는 사람 (3)</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;padding:12px 0 4px;">
+        <span class="badge blue" style="padding:8px 14px;font-size:14px;">김지연 · @jyi</span>
+        <span class="badge blue" style="padding:8px 14px;font-size:14px;">박성민 · @park</span>
+        <span class="badge blue" style="padding:8px 14px;font-size:14px;">이정훈 · @lee</span>
       </div>
     </div>
 
-    <!-- 미리보기 -->
-    <div class="section" style="padding-bottom:16px;">
-      <div class="list-header">미리보기</div>
-    </div>
-
-    <div class="preview-card">
-      <div class="pc-tag">발송 문구</div>
-      <div class="pc-body">
-        안녕하세요! <strong>15회차 과제</strong> 제출이 아직 안 됐어요.<br><br>
-        주제: <strong>React Navigation</strong><br>
-        마감: <strong>7월 14일 일요일 밤 11:59</strong><br><br>
-        아직 2일 남았어요. PR 링크를 남겨주시면 완료 표시를 해둘게요. 어려운 점이 있다면 스터디 채널에서 물어봐 주세요!
-      </div>
-    </div>
-
-    <!-- 발송 채널 -->
+    <!-- 말투 선택 (SegmentedControl: 2옵션만) -->
     <div class="section" style="margin-top:20px;">
-      <div class="list-header">발송 채널</div>
-
-      <div class="list-row padding-s">
-        <div class="lr-thumb" style="background:#5865F2;color:#fff;font-size:14px;width:36px;height:36px;">D</div>
-        <div class="lr-content">
-          <div class="lr-title" style="font-size:15px;">Discord DM</div>
-          <div class="lr-subtitle">3명에게 개인적으로 보내요</div>
-        </div>
-        <div class="lr-right">
-          <span class="badge blue">선택됨</span>
-        </div>
-      </div>
-
-      <div class="list-row padding-s">
-        <div class="lr-thumb" style="background:#5865F2;color:#fff;font-size:14px;width:36px;height:36px;">#</div>
-        <div class="lr-content">
-          <div class="lr-title" style="font-size:15px;color:var(--tds-fg-secondary);">스터디 채널에 멘션</div>
-          <div class="lr-subtitle">@김지연 @박성민 @이정훈</div>
-        </div>
-        <div class="lr-right"></div>
-      </div>
-
-      <div class="list-row padding-s">
-        <div class="lr-thumb" style="background:var(--tds-surface-alt);color:var(--tds-fg-secondary);width:36px;height:36px;">⎘</div>
-        <div class="lr-content">
-          <div class="lr-title" style="font-size:15px;color:var(--tds-fg-secondary);">문구 복사만 하기</div>
-          <div class="lr-subtitle">직접 붙여넣어 보내요</div>
-        </div>
-        <div class="lr-right"></div>
+      <div class="list-header">말투</div>
+      <div style="display:flex;gap:0;padding:12px 0 4px;background:var(--tds-surface-alt);border-radius:10px;padding:4px;margin-top:8px;">
+        <button style="flex:1;padding:10px;border-radius:8px;font-size:14px;font-weight:600;background:var(--tds-surface);color:var(--tds-blue);box-shadow:0 1px 3px rgba(0,0,0,0.1);">친근하게</button>
+        <button style="flex:1;padding:10px;border-radius:8px;font-size:14px;font-weight:500;color:var(--tds-fg-secondary);">정중하게</button>
       </div>
     </div>
 
-    <!-- 안내 -->
-    <div style="padding:14px 20px;font-size:12px;color:var(--tds-muted);line-height:1.5;">
-      같은 사람에게 하루 1회만 자동 발송해요. 발송 기록은 현황에서 볼 수 있어요.
+    <!-- 미리보기 (editable textarea) -->
+    <div class="section" style="margin-top:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div class="list-header">미리보기</div>
+        <button style="font-size:13px;color:var(--tds-blue);font-weight:600;">복사하기</button>
+      </div>
+      <div style="background:var(--tds-surface-alt);border-radius:12px;padding:16px;font-size:14px;line-height:1.6;color:var(--tds-fg-primary);border:1px solid var(--tds-border);min-height:160px;">
+        📚 [15회차] 제출 리마인드<br>
+        제출률: 9/12 (75%)<br>
+        마감: 7월 29일 23:59<br><br>
+        아직 제출하지 않은 분:<br>
+        - @jyi<br>
+        - @park<br>
+        - @lee<br><br>
+        지금 바로 제출해주세요! 제출 링크는 스레드에서 확인하세요.
+      </div>
     </div>
   </div>
 
   <!-- BottomCTA -->
   <div class="bottom-cta">
-    <button class="btn primary">3명에게 보내기</button>
+    <button class="btn primary">Discord로 보내기</button>
   </div>
 </div>
 </body>

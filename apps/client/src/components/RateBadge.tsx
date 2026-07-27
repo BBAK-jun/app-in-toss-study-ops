@@ -8,6 +8,18 @@ export function rateBadgeColor(rate: number): 'green' | 'yellow' | 'red' {
   return 'red';
 }
 
+// 동일한 0.8/0.5 기준을 사용하는 hex 색상 (진행바, 텍스트 등 Badge 외부 표시용).
+// 단일 진실 원천: 모든 제출률 색상은 이 두 함수를 통해서만 결정된다.
+const RATE_HEX: Record<'green' | 'yellow' | 'red', string> = {
+  green: '#16A34A',
+  yellow: '#F59E0B',
+  red: '#EF4444',
+};
+
+export function rateHexColor(rate: number): string {
+  return RATE_HEX[rateBadgeColor(rate)];
+}
+
 interface RateBadgeProps {
   rate: number; // 0~1
   size?: 'large' | 'medium' | 'small' | 'xsmall';
