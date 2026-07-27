@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { appLogin } from '@apps-in-toss/web-framework';
 import { BottomCTA, Paragraph, Spacing, TextField } from '@toss/tds-mobile';
 import { apiClient, ApiError } from '../lib/api-client';
@@ -39,7 +39,7 @@ export function LoginPage() {
       const { sessionToken, user } = await apiClient.auth.login(authorizationCode, referrer);
       apiClient.setToken(sessionToken);
       setUser(user);
-      navigate('/', { replace: true });
+      navigate({ to: '/', replace: true });
     } catch (e) {
       if (e instanceof ApiError) {
         setError(e.message);

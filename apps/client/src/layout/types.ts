@@ -31,20 +31,20 @@ export type LayoutGroup = 'gnb' | 'fullscreen';
 
 /**
  * 단일 라우트 선언. routes.tsx 의 진실 소스 배열 원소 타입.
- * react-router v6 의 handle 필드에 그대로 주입되며, GnbLayout 등이 useMatches() 로 읽는다.
+ * TanStack Router 의 route staticData 에 그대로 주입되며, GnbLayout 등이 useMatches() 로 읽는다.
  */
 export interface RouteSpec {
   path: string;
   element: ReactElement;
   layout?: LayoutSpec;
   layoutGroup?: LayoutGroup; // 생략 시 'gnb'
-  // Protected 래핑 필요 여부. App.tsx 가 이 값을 보고 Protected 범위를 결정한다.
+  // Protected 래핑 필요 여부. router/routes.tsx 가 이 값을 보고 beforeLoad 가드를 건다.
   protected?: boolean;
 }
 
 /**
- * react-router useMatches() 결과의 handle 슬롯에 들어갈 타입.
- * LayoutSpec 외에 다른 handle 용도가 생기면 확장 가능(declaration merging).
+ * TanStack Router 의 useMatches() 결과 route.staticData 슬롯에 들어갈 타입.
+ * LayoutSpec 외에 다른 용도가 생기면 확장 가능(declaration merging).
  */
 export interface RouteHandle {
   layout?: LayoutSpec;

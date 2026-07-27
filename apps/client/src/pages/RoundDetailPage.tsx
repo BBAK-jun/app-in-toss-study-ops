@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from '@tanstack/react-router';
 import { BottomCTA, Button, ListHeader, ListRow, Paragraph, Spacing } from '@toss/tds-mobile';
 
 import { EmptyState } from '../components/EmptyState';
@@ -9,7 +9,7 @@ import { useRoundStatusQuery } from '../query/roundQueries';
 import { usePageLayout } from '../layout/PageLayoutContext';
 
 export function RoundDetailPage() {
-  const { roundId = '' } = useParams();
+  const { roundId = '' } = useParams({ strict: false });
   const navigate = useNavigate();
   const { data: status, isLoading, error, refetch } = useRoundStatusQuery(roundId);
 
@@ -73,7 +73,7 @@ export function RoundDetailPage() {
           <ListHeader
             title={`제출자(${submittedCount})`}
             right={
-              <Button variant="weak" size="small" onClick={() => navigate(`/rounds/${roundId}/submit`)}>
+              <Button variant="weak" size="small" onClick={() => navigate({ to: '/rounds/$roundId/submit', params: { roundId } })}>
                 제출 등록
               </Button>
             }
@@ -144,7 +144,7 @@ export function RoundDetailPage() {
       ) : null}
 
       <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '0 16px env(safe-area-inset-bottom)' }}>
-        <BottomCTA onClick={() => navigate(`/rounds/${roundId}/reminder`)}>리마인드 보내기</BottomCTA>
+        <BottomCTA onClick={() => navigate({ to: '/rounds/$roundId/reminder', params: { roundId } })}>리마인드 보내기</BottomCTA>
       </div>
     </ErrorBoundary>
   );

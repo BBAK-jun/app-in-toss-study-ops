@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { LogLevel, LogQuery, LogQueryResult, LogRow, LogSource } from '@studyops/shared';
 import { LOG_LEVELS } from '@studyops/shared';
+import { useQueryStates, parseAsString } from 'nuqs';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { fetchLogs } from '../api/logs';
 
@@ -12,15 +13,17 @@ export function LogsPage() {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const [level, setLevel] = useState<LogLevel | ''>('');
-  const [source, setSource] = useState<LogSource | ''>('');
+  const [{ level, source }, setFilters] = useQueryStates({
+    level: parseAsString,
+    source: parseAsString,
+  });
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const buildQuery = useCallback((cursor?: string): LogQuery => {
     const q: LogQuery = { limit: 50 };
-    if (level) q.level = level;
-    if (source) q.source = source;
+    if (level) q.level = level as LogLevel;
+    if (source) q.source = source as LogSource;
     if (search.trim()) q.search = search.trim();
     if (cursor) q.cursor = cursor;
     return q;
@@ -74,14 +77,20 @@ export function LogsPage() {
 
       <ErrorBoundary>
         <form className="filters" onSubmit={handleFilterSubmit}>
-          <select value={level} onChange={(e) => setLevel(e.target.value as LogLevel | '')}>
+          <select
+            value={level ?? ''}
+            onChange={(e) => setFilters({ level: e.target.value || null })}
+          >
             <option value="">모든 레벨</option>
             {LOG_LEVELS.map((l) => (
               <option key={l} value={l}>{l}</option>
             ))}
           </select>
 
-          <select value={source} onChange={(e) => setSource(e.target.value as LogSource | '')}>
+          <select
+            value={source ?? ''}
+            onChange={(e) => setFilters({ source: e.target.value || null })}
+          >
             <option value="">모든 소스</option>
             {SOURCES.map((s) => (
               <option key={s} value={s}>{s}</option>

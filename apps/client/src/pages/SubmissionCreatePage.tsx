@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from '@tanstack/react-router';
 import {
   BottomCTA,
   Button,
@@ -20,7 +20,7 @@ import { useQuery } from '@tanstack/react-query';
 import { studyKeys } from '../query/queryKeys';
 
 export function SubmissionCreatePage() {
-  const { roundId = '' } = useParams();
+  const { roundId = '' } = useParams({ strict: false });
   const navigate = useNavigate();
   const { openToast } = useToast();
 
@@ -61,7 +61,7 @@ export function SubmissionCreatePage() {
         note: note.trim() || undefined,
       });
       openToast('제출을 등록했어요.');
-      navigate(`/rounds/${roundId}`, { replace: true });
+      navigate({ to: '/rounds/$roundId', params: { roundId }, replace: true });
     } catch (e) {
       const code = e instanceof ApiError ? e.code : '';
       if (code === 'CONFLICT') {

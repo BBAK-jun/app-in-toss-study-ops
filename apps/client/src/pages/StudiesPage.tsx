@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import {
   BottomCTA,
   Button,
@@ -52,7 +52,7 @@ export function StudiesPage() {
         ) : (
           <>
             <ListHeader title="스터디 목록" />
-            <List items={studies} onSelect={(s) => navigate(`/studies/${s.id}`)} />
+            <List items={studies} onSelect={(s) => navigate({ to: '/studies/$studyId', params: { studyId: s.id } })} />
           </>
         )
       ) : null}
