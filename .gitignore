@@ -54,3 +54,4 @@ backups/
 
 # Backup files
 *.bak
+.turbo/

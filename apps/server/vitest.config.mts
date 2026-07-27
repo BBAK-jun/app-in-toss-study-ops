@@ -1,7 +1,10 @@
-// Vitest 설정 — Cloudflare Workers 환경에서 테스트 실행 (Miniflare 기반).
+// Vitest 설정 — Cloudflare Workers 환경에서 통합 테스트 실행 (Miniflare 기반).
 // ADR-012 참조. wrangler.jsonc 의 binding(D1, vars)을 그대로 상속.
 // Secrets (SESSION_SECRET, MCP_API_TOKEN)은 miniflare.bindings 에서 주입 —
 // 실제 wrangler secret 이 아닌 테스트 전용 값.
+//
+// 이 config은 cloudflare:test (Workers pool)을 import하는 테스트만 실행.
+// 순수 단위 테스트는 루트 vitest.config.ts (npm run test:unit)에서 실행.
 //
 // v4 API: cloudflareTest 플러그인이 pool 설정 + wrangler binding 상속을 담당.
 // (이전 defineWorkersConfig / pool:'workers' 방식은 v3에서 deprecated)
@@ -22,6 +25,9 @@ export default defineConfig({
     }),
   ],
   test: {
-    include: ['src/**/*.test.ts'],
+    include: [
+      'src/middleware/cors.test.ts',
+      'src/routes/health.test.ts',
+    ],
   },
 });

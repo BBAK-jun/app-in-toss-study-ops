@@ -19,6 +19,20 @@
     }
   ],
 
+  "r2_buckets": [
+    {
+      "binding": "LOG_ARCHIVE",
+      "bucket_name": "studyops-log-archive-dev"
+    }
+  ],
+
+  "analytics_engine_datasets": [
+    {
+      "binding": "LOGS_ANALYTICS",
+      "dataset": "studyops_logs_dev"
+    }
+  ],
+
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1
@@ -46,14 +60,19 @@
         }
       ],
 
-      "observability": {
-        "enabled": true,
-        "head_sampling_rate": 1
-      },
+      "r2_buckets": [
+        {
+          "binding": "LOG_ARCHIVE",
+          "bucket_name": "studyops-log-archive-prod"
+        }
+      ],
 
-      "triggers": {
-        "crons": ["0 3 * * *"]
-      }
+      "analytics_engine_datasets": [
+        {
+          "binding": "LOGS_ANALYTICS",
+          "dataset": "studyops_logs_prod"
+        }
+      ]
     }
   }
 }

@@ -13,6 +13,7 @@ export default defineConfig({
     environment: 'node',
     include: [
       'apps/server/src/**/*.test.ts',
+      'apps/log-server/src/**/*.test.ts',
       'packages/shared/src/**/*.test.ts',
       'apps/client/src/**/*.test.{ts,tsx}',
     ],
