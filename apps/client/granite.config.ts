@@ -12,8 +12,8 @@ export default defineConfig({
   },
   permissions: [], // MVP: 추가 권한 최소화
   web: {
-    host: '0.0.0.0',
-    port: 3000,
+    host: 'localhost',
+    port: 5173,
     commands: {
       dev: 'pnpm run dev',
       build: 'pnpm run build',
