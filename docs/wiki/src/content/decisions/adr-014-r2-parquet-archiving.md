@@ -297,28 +297,50 @@ ADR-013과 동일한 phase 방식. 각 phase 독립적 롤백 가능.
 - 단위 테스트 (12개: archive.test.ts) + retention.test.ts 업데이트 ✅
 - dev 환경 검증 — 버킷 수동 생성 후 cron 트리거로 확인 필요
 
-### Phase 3 — Parquet 마이그레이션 (2~3일)
-- `parquet-wasm` 패키지 추가
-- `serializeRows()` 내부 교체 (JSONL → Parquet)
-- 기존 JSONL 파일을 백필 — 별도 일회성 cron 또는 수동 스크립트
-- DuckDB CLI로 R2 읽기 테스트 (column pruning, predicate pushdown 검증)
+### Phase 3 — Parquet 마이그레이션 (연기됨 — JSONL 유지)
+**결정**: `parquet-wasm` PoC 결과, 현재 데이터 규모와 아키텍처에서 JSONL을 유지.
 
-### Phase 4 (옵션) — DuckDB-Wasm 대시보드 (별도 작업)
-- `/admin/logs/archive` 페이지 추가
-- `@duckdb/duckdb-wasm` 로드, R2 CORS 설정
-- 커스텀 SQL 에디터 또는 프리셋 쿼리 (월별 error rate, 년도별 top events)
+분석 근거:
+1. **데이터 규모**: 하루 ~10k rows × 200 byte/row = 2MB/일. JSONL 직렬화/역직렬화
+   오버헤드가 미측정될 정도로 작음. Parquet column pruning 이점은 수백만 row
+   이상에서 의미.
+2. **Phase 4 아키텍처**: 대시보드를 서버 사이드 쿼리(Worker → R2 JSONL 직접 읽기)로
+   구현. 클라이언트 사이드 DuckDB-Wasm이 없으므로 Parquet 포맷의 주요 이점
+   (DuckDB column scan)을 활용하지 못함.
+3. **Workers 복잡도**: `parquet-wasm` (~1.5MB)을 Workers 번들에 통합하려면 WASM
+   모듈 로딩, Workers 빌드 설정 조정, CPU 시간 증가가 필요. Free tier 10ms
+   CPU 한계 내에서 JSONL 직렬화가 안전.
+4. **향후 전환 경로**: R2 객체 포맷은 파티션 키로 분리되어 있어, 향후 데이터
+   증가시 Parquet 백필 스크립트로 일괄 변환 가능. Phase 3는 "언제든 재개 가능" 상태.
+
+재개 조건:
+- 일일 로그 발생량이 100k rows 이상으로 증가
+- 또는 외부 DuckDB CLI 기반 정기 분석이 정기적으로 필요해지는 경우
+
+### Phase 4 — 서버 사이드 아카이브 쿼리 대시보드 ✅
+**결정**: DuckDB-Wasm 대신 **서버 사이드 쿼리** 방식 채택.
+
+근거:
+1. **모바일 WebView 환경**: 앱인토스 WebView에서 duckdb-wasm(~10MB) 초기 다운로드는
+   모바일 데이터 환경에서 비현실적. Service Worker 캐싱을 추가해도 첫 로드 비용.
+2. **메모리 제약**: 모바일 브라우저 메모리 제약으로 대규모 Parquet in-browser 스캔 불가.
+3. **아키텍처 일관성**: 기존 `/admin/logs/metrics` (ADR-013 Phase 3) 와 동일한 패턴 —
+   Worker가 직접 소스(AE/R2)를 읽고 JSON 반환.
+
+구현:
+- `GET /admin/logs/archive/stats` — R2 객체 수, 총 크기, 날짜 범위
+- `GET /admin/logs/archive/query` — 날짜/레벨 필터로 R2 JSONL 스캔, 집계 반환
 
 ## Open Questions
 
-1. **parquet-wasm Workers 호환성** — Phase 3에서 PoC 필수. wasm 번들 1.5MB가
-   Workers 용량 한계(1MB 압축 후)에 걸리는지 확인. 걸리면 외부 wasm 모듈 참조 또는
-   JSONL 유지 검토.
+1. **parquet-wasm Workers 호환성** — **해결됨 (Phase 3 연기)**. 분석 결과 현재 규모에서
+   JSONL이 충분. `parquet-wasm` 통합은 데이터 증가 시 재개 가능. Phase 3 문서 참조.
 2. **R2 lifecycle 자동화** — Cloudflare가 lifecycle rule을 지원하기 시작하면
    "1년 후 객체 삭제" 또는 "특정 파티션만 보관" 정책 적용 검토.
 3. **D1 → R2 마이그레이션 지연 감내** — 일일 배치이므로 최대 24시간 차트 빈 구간.
    실시간이 필요하면 AE로 보간 표시.
-4. **DuckDB-Wasm 번들 전략** — 초기 로드 10MB가 모바일 WebView에서 감내 가능한지.
-   Service Worker 캐싱 또는 code split 검토. Phase 4에서 결정.
+4. **DuckDB-Wasm 번들 전략** — **해결됨 (서버 사이드 채택)**. Phase 4에서 duckdb-wasm
+   대신 Worker 기반 서버 사이드 쿼리로 결정. 번들 전략 불필요.
 5. **GDPR/개인정보 삭제 요청** — 사용자 요청시 partition 단위/객체 단위 삭제 자동화
    스크립트 필요 여부. 초기에는 수동 처리.
 

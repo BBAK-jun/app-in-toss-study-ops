@@ -248,3 +248,57 @@ export interface LogRow {
   userAgent: string | null;
   ipHash: string | null;
 }
+
+// ─── 아카이브 쿼리 — ADR-014 Phase 4 ───────────────────────────────────────
+// R2 JSONL 아카이브를 서버 사이드에서 쿼리. Worker가 R2 바인딩으로 직접 읽음.
+// (duckdb-wasm 모바일 WebView 비적합 → 서버 사이드 결정. ADR-014 Phase 4 참조.)
+
+export interface ArchiveStats {
+  objectCount: number;
+  totalBytes: number;
+  partitions: ArchivePartition[];
+}
+
+export interface ArchivePartition {
+  prefix: string;
+  key: string;
+  size: number;
+  uploaded: string | null;
+}
+
+export interface ArchiveQuery {
+  year?: number;
+  month?: number;
+  level?: LogLevel;
+  event?: string;
+  search?: string;
+  limit?: number;
+}
+
+export interface ArchiveRow {
+  id: number;
+  ts: number;
+  level: string;
+  source: string;
+  event: string;
+  message: string;
+  userId: number | null;
+  sessionId: string | null;
+  requestId: string | null;
+  method: string | null;
+  path: string | null;
+  status: number | null;
+  durationMs: number | null;
+  context: Record<string, unknown> | null;
+  stack: string | null;
+  env: string;
+  version: string | null;
+  userAgent: string | null;
+  ipHash: string | null;
+}
+
+export interface ArchiveQueryResult {
+  rows: ArchiveRow[];
+  scannedObjects: number;
+  truncated: boolean;
+}

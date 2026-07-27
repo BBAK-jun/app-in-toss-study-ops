@@ -4,6 +4,9 @@ import type {
   LogQueryResult,
   LogMetricQuery,
   LogMetricResult,
+  ArchiveStats,
+  ArchiveQuery,
+  ArchiveQueryResult,
 } from '@studyops/shared';
 
 // GET /admin/logs — 로그 대시보드 조회.
@@ -36,4 +39,20 @@ function buildQueryString(params: LogQuery): string {
   if (params.cursor) entries.push(`cursor=${encodeURIComponent(params.cursor)}`);
   if (params.limit != null) entries.push(`limit=${params.limit}`);
   return entries.join('&');
+}
+
+export async function fetchArchiveStats(): Promise<ArchiveStats> {
+  return apiFetch<ArchiveStats>('/admin/logs/archive/stats');
+}
+
+export async function fetchArchiveQuery(params: ArchiveQuery = {}): Promise<ArchiveQueryResult> {
+  const entries: string[] = [];
+  if (params.year != null) entries.push(`year=${params.year}`);
+  if (params.month != null) entries.push(`month=${params.month}`);
+  if (params.level) entries.push(`level=${encodeURIComponent(params.level)}`);
+  if (params.event) entries.push(`event=${encodeURIComponent(params.event)}`);
+  if (params.search) entries.push(`search=${encodeURIComponent(params.search)}`);
+  if (params.limit != null) entries.push(`limit=${params.limit}`);
+  const path = entries.length > 0 ? `/admin/logs/archive/query?${entries.join('&')}` : '/admin/logs/archive/query';
+  return apiFetch<ArchiveQueryResult>(path);
 }

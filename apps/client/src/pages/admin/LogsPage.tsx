@@ -8,6 +8,7 @@ import { ErrorBoundary } from '../../components/ErrorBoundary';
 import { ApiError } from '../../api/client';
 import { fetchLogs } from '../../api/logs';
 import { LogsMetricsPanel } from './LogsMetricsPanel';
+import { LogsArchivePanel } from './LogsArchivePanel';
 
 const LEVEL_COLORS: Record<LogLevel, string> = {
   debug: '#8B95A1',
@@ -88,6 +89,9 @@ export function LogsPage() {
       <ErrorBoundary>
         {/* AE 메트릭 패널 (ADR-013 Phase 4) */}
         <LogsMetricsPanel />
+
+        {/* R2 아카이브 패널 (ADR-014 Phase 4) */}
+        <LogsArchivePanel />
 
         {/* 필터 */}
         <form onSubmit={handleFilterSubmit} style={{ padding: '16px' }}>
