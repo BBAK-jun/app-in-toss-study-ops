@@ -11,6 +11,9 @@
 // 제외. 대신 logBootInfo에 상태를 노출하여 가시성만 확보 (ADR-013 — AE writes는
 // non-critical best-effort 메트릭이므로 누락시 Worker가 동작해야 함).
 //
+// R2(LOG_ARCHIVE) 바인딩도 동일 원칙 — Phase 1은 binding 선언만 (ADR-014).
+// 아카이빙 cron은 별도 에러 핸들링하므로 boot fail-fast 대상 아님.
+//
 // 실패 시 즉시 throw — Worker는 부팅되지 않고 500 응답. wrangler tail 로 즉시 관측 가능.
 
 import type { AppEnv } from './env';
@@ -90,6 +93,7 @@ export function logBootInfo(env: AppEnv['Bindings']): void {
       authMode: env.TOSS_AUTH_MODE,
       tossApiBase: env.TOSS_API_BASE_URL,
       analyticsEngine: env.LOGS_ANALYTICS ? 'configured' : 'missing',
+      r2Archive: env.LOG_ARCHIVE ? 'configured' : 'missing',
     }),
   );
 }

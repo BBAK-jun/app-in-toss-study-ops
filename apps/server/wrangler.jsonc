@@ -38,6 +38,17 @@
     }
   ],
 
+  // R2 — 장기 로그 아카이빙 (ADR-014). D1 retention 만료분을 Parquet/JSONL로 영구 보관.
+  // 버킷은 `wrangler r2 bucket create studyops-log-archive-dev` 로 사전 생성 필요.
+  // dev/prod 격리 by bucket name (ADR-007 패턴).
+  // 본 Phase 1은 binding 선언만 — 실제 아카이빙 로직은 Phase 2에서.
+  "r2_buckets": [
+    {
+      "binding": "LOG_ARCHIVE",
+      "bucket_name": "studyops-log-archive-dev"
+    }
+  ],
+
   // Observability for logging + wrangler tail. See ADR-008.
   "observability": {
     "enabled": true,
@@ -89,6 +100,14 @@
         {
           "binding": "LOGS_ANALYTICS",
           "dataset": "studyops_logs_prod"
+        }
+      ],
+
+      // Prod R2 bucket — ADR-014. 영구 보관 아카이브. 별도 버킷으로 dev와 격리.
+      "r2_buckets": [
+        {
+          "binding": "LOG_ARCHIVE",
+          "bucket_name": "studyops-log-archive-prod"
         }
       ],
       "observability": {
