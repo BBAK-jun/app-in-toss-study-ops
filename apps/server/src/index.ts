@@ -48,7 +48,7 @@ protectedApi.route('/rounds', roundRoutes);
 protectedApi.route('/logs', logRoutes);
   protectedApi.route('/admin/logs', adminLogRoutes);
   protectedApi.route('/admin/logs', adminLogMetricsRoutes);
-  protectedApi.route('/admin/logs', adminLogArchiveRoutes);
+  protectedApi.route('/admin/logs/archive', adminLogArchiveRoutes);
 
 app.route('/', protectedApi);
 

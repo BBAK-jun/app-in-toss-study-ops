@@ -49,6 +49,7 @@ export async function fetchArchiveQuery(params: ArchiveQuery = {}): Promise<Arch
   const entries: string[] = [];
   if (params.year != null) entries.push(`year=${params.year}`);
   if (params.month != null) entries.push(`month=${params.month}`);
+  if (params.day != null) entries.push(`day=${params.day}`);
   if (params.level) entries.push(`level=${encodeURIComponent(params.level)}`);
   if (params.event) entries.push(`event=${encodeURIComponent(params.event)}`);
   if (params.search) entries.push(`search=${encodeURIComponent(params.search)}`);

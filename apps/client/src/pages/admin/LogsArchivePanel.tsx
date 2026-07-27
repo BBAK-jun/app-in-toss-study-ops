@@ -39,6 +39,7 @@ export function LogsArchivePanel() {
   // query 필터
   const [year, setYear] = useState('');
   const [month, setMonth] = useState('');
+  const [day, setDay] = useState('');
   const [level, setLevel] = useState<LogLevel | ''>('');
   const [event, setEvent] = useState('');
   const [search, setSearch] = useState('');
@@ -63,6 +64,7 @@ export function LogsArchivePanel() {
       const params: ArchiveQuery = { limit: 100 };
       if (year.trim()) params.year = Number(year);
       if (month.trim()) params.month = Number(month);
+      if (day.trim()) params.day = Number(day);
       if (level) params.level = level;
       if (event.trim()) params.event = event.trim();
       if (search.trim()) params.search = search.trim();
@@ -73,7 +75,7 @@ export function LogsArchivePanel() {
     } finally {
       setQueryLoading(false);
     }
-  }, [year, month, level, event, search]);
+  }, [year, month, day, level, event, search]);
 
   useEffect(() => {
     if (view === 'stats' && stats === null) loadStats();
@@ -122,6 +124,7 @@ export function LogsArchivePanel() {
             filterProps={{
               year, setYear,
               month, setMonth,
+              day, setDay,
               level, setLevel,
               event, setEvent,
               search, setSearch,
@@ -210,6 +213,7 @@ function QueryView({
   const {
     year, setYear,
     month, setMonth,
+    day, setDay,
     level, setLevel,
     event, setEvent,
     search, setSearch,
@@ -236,6 +240,13 @@ function QueryView({
             placeholder="월(MM)"
             value={month}
             onChange={(e) => setMonth(e.target.value)}
+            style={{ ...selectStyle, flex: 1 }}
+          />
+          <input
+            type="number"
+            placeholder="일(DD)"
+            value={day}
+            onChange={(e) => setDay(e.target.value)}
             style={{ ...selectStyle, flex: 1 }}
           />
         </div>
@@ -343,6 +354,8 @@ interface FilterProps {
   setYear: (v: string) => void;
   month: string;
   setMonth: (v: string) => void;
+  day: string;
+  setDay: (v: string) => void;
   level: LogLevel | '';
   setLevel: (v: LogLevel | '') => void;
   event: string;

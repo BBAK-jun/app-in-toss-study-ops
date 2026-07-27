@@ -269,6 +269,7 @@ export interface ArchivePartition {
 export interface ArchiveQuery {
   year?: number;
   month?: number;
+  day?: number;
   level?: LogLevel;
   event?: string;
   search?: string;

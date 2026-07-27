@@ -56,6 +56,7 @@ adminLogArchiveRoutes.get('/query', async (c) => {
 
   const year = c.req.query('year') ? Number(c.req.query('year')) : undefined;
   const month = c.req.query('month') ? Number(c.req.query('month')) : undefined;
+  const day = c.req.query('day') ? Number(c.req.query('day')) : undefined;
   const level = c.req.query('level');
   const event = c.req.query('event');
   const search = c.req.query('search');
@@ -64,7 +65,7 @@ adminLogArchiveRoutes.get('/query', async (c) => {
     Math.max(1, Number(c.req.query('limit') ?? '100')),
   );
 
-  const prefix = buildScanPrefix(year, month, level);
+  const prefix = buildScanPrefix(year, month, day, level);
 
   const listed = await c.env.LOG_ARCHIVE.list({
     prefix,
@@ -92,6 +93,7 @@ adminLogArchiveRoutes.get('/query', async (c) => {
 
       try {
         const row = JSON.parse(line) as ArchiveRow;
+        if (level && row.level !== level) continue;
         if (event && row.event !== event) continue;
         if (search && !row.message.toLowerCase().includes(search.toLowerCase())) continue;
         collectedRows.push(row);
@@ -118,16 +120,24 @@ function extractPartitionPrefix(key: string): string {
   return key;
 }
 
+// Hive partition pruning — segments must be contiguous. Cannot skip levels.
+// E.g. year+level without month/day → only `year=YYYY/` prefix; level filtered in-memory.
 function buildScanPrefix(
   year: number | undefined,
   month: number | undefined,
+  day: number | undefined,
   level: string | undefined,
 ): string {
   const segments: string[] = [];
-  if (year) segments.push(`year=${year}`);
-  if (month) segments.push(`month=${String(month).padStart(2, '0')}`);
-  if (level) segments.push(`level=${level}`);
-  return segments.length > 0 ? segments.join('/') + '/' : '';
+  if (!year) return '';
+  segments.push(`year=${year}`);
+  if (!month) return segments.join('/') + '/';
+  segments.push(`month=${String(month).padStart(2, '0')}`);
+  if (!day) return segments.join('/') + '/';
+  segments.push(`day=${String(day).padStart(2, '0')}`);
+  if (!level) return segments.join('/') + '/';
+  segments.push(`level=${level}`);
+  return segments.join('/') + '/';
 }
 
 // Export for unit tests.
