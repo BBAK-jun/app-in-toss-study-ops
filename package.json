@@ -21,7 +21,6 @@
     "typecheck:client": "npm run typecheck -w apps/client",
     "typecheck": "npm run typecheck:shared && npm run typecheck:server && npm run typecheck:client",
     "test:server": "npm run test -w apps/server",
-    "test": "npm run test:server",
     "types:server": "npm run types -w apps/server",
     "deploy": "npm run deploy -w apps/server",
     "deploy:production": "npm run deploy:production -w apps/server",
@@ -39,13 +38,15 @@
     "wiki:watch": "npm run watch -w docs/wiki",
     "wiki:install-daemon": "npm run install-daemon -w docs/wiki",
     "wiki:uninstall-daemon": "npm run uninstall-daemon -w docs/wiki",
-    "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:workers": "npm run test -w apps/server",
     "test:watch": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test": "npm run test:unit && npm run test:workers"
   },
   "devDependencies": {
     "fake-indexeddb": "^5.0.2",
     "typescript": "^5.6.0",
-    "vitest": "^2.1.9"
+    "vitest": "^4.1.10"
   }
 }
