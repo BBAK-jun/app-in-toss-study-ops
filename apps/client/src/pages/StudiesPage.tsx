@@ -15,14 +15,26 @@ import type { StudyDto } from '@studyops/shared';
 import { AppShell } from '../components/AppShell';
 import { EmptyState } from '../components/EmptyState';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { RateBadge, rateHexColor } from '../components/RateBadge';
 import { ApiError } from '../api/client';
-import { createStudy, listStudies } from '../api/studies';
+import { createStudy, listStudies, listRoundSummaries, type RoundSummary } from '../api/studies';
+import { getDeadlineUrgency } from '../lib/formatDate';
 
-// 스터디 목록 화면(문서 4-5): GET /studies + BottomCTA(스터디 만들기 → Modal).
+interface StudyDashboard {
+  study: StudyDto;
+  latest: RoundSummary | null;
+  notSubmitted: number;
+}
+
+function pickLatestRound(summaries: RoundSummary[]): RoundSummary | null {
+  if (summaries.length === 0) return null;
+  return summaries.reduce((a, b) => (b.roundNumber > a.roundNumber ? b : a));
+}
+
 export function StudiesPage() {
   const navigate = useNavigate();
   const { openToast } = useToast();
-  const [studies, setStudies] = useState<StudyDto[] | null>(null);
+  const [dashboards, setDashboards] = useState<StudyDashboard[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -32,8 +44,22 @@ export function StudiesPage() {
   const refresh = useCallback(async () => {
     setError(null);
     try {
-      const data = await listStudies();
-      setStudies(data);
+      const studies = await listStudies();
+      const allSummaries = await Promise.all(
+        studies.map((s) =>
+          listRoundSummaries(s.id).catch(() => [] as RoundSummary[]),
+        ),
+      );
+      setDashboards(
+        studies.map((study, i) => {
+          const latest = pickLatestRound(allSummaries[i]);
+          return {
+            study,
+            latest,
+            notSubmitted: latest ? latest.total - latest.submittedCount : 0,
+          };
+        }),
+      );
     } catch (e) {
       setError(e instanceof ApiError ? e.message : '스터디를 불러오지 못했어요.');
     }
@@ -60,9 +86,24 @@ export function StudiesPage() {
     }
   };
 
+  const totalNotSubmitted = (dashboards ?? []).reduce((s, d) => s + d.notSubmitted, 0);
+  const studiesWithPending = (dashboards ?? []).filter((d) => d.notSubmitted > 0);
+
+  const mostUrgent = studiesWithPending
+    .filter((d) => d.latest !== null)
+    .sort((a, b) => {
+      const aDue = a.latest!.dueAt ?? Number.MAX_SAFE_INTEGER;
+      const bDue = b.latest!.dueAt ?? Number.MAX_SAFE_INTEGER;
+      return aDue - bDue;
+    })[0];
+
+  const hasData = !error && dashboards !== null;
+  const isEmpty = hasData && dashboards.length === 0;
+  const showDashboard = hasData && dashboards.length > 0;
+
   return (
     <AppShell
-      title="내 스터디"
+      title="스터디옵스"
       right={
         <Button variant="weak" size="small" onClick={refresh}>
           새로고침
@@ -82,21 +123,91 @@ export function StudiesPage() {
           </div>
         ) : null}
 
-        {!error && studies !== null ? (
-          studies.length === 0 ? (
-            <EmptyState
-              title="아직 스터디가 없어요"
-              description="첫 스터디를 만들어 시작해보세요."
-            />
-          ) : (
-            <>
-              <ListHeader title="스터디 목록" />
-              <List items={studies} onSelect={(s) => navigate(`/studies/${s.id}`)} />
-            </>
-          )
+        {isEmpty ? (
+          <EmptyState title="아직 스터디가 없어요" description="첫 스터디를 만들어 시작해보세요." />
         ) : null}
 
-        {!error && studies === null ? (
+        {showDashboard ? (
+          <>
+            <HeroCard
+              totalNotSubmitted={totalNotSubmitted}
+              pendingStudyCount={studiesWithPending.length}
+              totalStudies={dashboards.length}
+              remindTargetRoundId={mostUrgent?.latest?.roundId ?? null}
+              onRemind={(rid) => navigate(`/rounds/${rid}/reminder`)}
+            />
+
+            <ListHeader title="내 스터디" />
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              {dashboards.map((d) => {
+                const urgency = d.latest ? getDeadlineUrgency(d.latest.dueAt) : null;
+                const pct = d.latest ? Math.round(d.latest.rate * 100) : null;
+                return (
+                  <ListRow
+                    key={d.study.id}
+                    verticalPadding="large"
+                    arrowType="right"
+                    withTouchEffect
+                    onClick={() => navigate(`/studies/${d.study.id}`)}
+                    contents={
+                      <>
+                        <Paragraph typography="t5" fontWeight="medium">
+                          {d.study.title}
+                        </Paragraph>
+                        {d.latest ? (
+                          <>
+                            <Spacing size={4} />
+                            <Paragraph typography="t7" color="#5B646B">
+                              {d.notSubmitted > 0
+                                ? `${d.notSubmitted}명 미제출 · ${d.latest.roundNumber}회차`
+                                : `전원 제출 · ${d.latest.roundNumber}회차`}
+                              {urgency ? ` · ${urgency.label}` : ''}
+                            </Paragraph>
+                            <Spacing size={6} />
+                            <div
+                              style={{
+                                width: '100%',
+                                height: 4,
+                                background: '#E5E8EB',
+                                borderRadius: 2,
+                                overflow: 'hidden',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: `${pct}%`,
+                                  height: '100%',
+                                  background: rateHexColor(d.latest.rate),
+                                  borderRadius: 2,
+                                }}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <Spacing size={4} />
+                            <Paragraph typography="t7" color="#8B95A1">
+                              회차를 만들어 시작해보세요
+                            </Paragraph>
+                          </>
+                        )}
+                      </>
+                    }
+                    right={
+                      d.latest ? (
+                        <div style={{ textAlign: 'right' }}>
+                          <RateBadge rate={d.latest.rate} size="small" />
+                        </div>
+                      ) : undefined
+                    }
+                  />
+                );
+              })}
+            </ul>
+          </>
+        ) : null}
+
+        {!error && dashboards === null ? (
           <div style={{ padding: 24 }}>
             <Paragraph typography="t6" color="#8B95A1">
               불러오는 중…
@@ -105,7 +216,15 @@ export function StudiesPage() {
         ) : null}
       </ErrorBoundary>
 
-      <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, padding: '0 16px env(safe-area-inset-bottom)' }}>
+      <div
+        style={{
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          padding: '0 16px env(safe-area-inset-bottom)',
+        }}
+      >
         <BottomCTA onClick={() => setCreateOpen(true)}>스터디 만들기</BottomCTA>
       </div>
 
@@ -148,33 +267,74 @@ export function StudiesPage() {
   );
 }
 
-function List({ items, onSelect }: { items: StudyDto[]; onSelect: (s: StudyDto) => void }) {
+function HeroCard({
+  totalNotSubmitted,
+  pendingStudyCount,
+  totalStudies,
+  remindTargetRoundId,
+  onRemind,
+}: {
+  totalNotSubmitted: number;
+  pendingStudyCount: number;
+  totalStudies: number;
+  remindTargetRoundId: string | null;
+  onRemind: (roundId: string) => void;
+}) {
+  const hasPending = totalNotSubmitted > 0;
+  const accentColor = hasPending ? '#EF4444' : '#16A34A';
+  const bgColor = hasPending ? '#FEF2F2' : '#F0FDF4';
+
   return (
-    <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-      {items.map((s) => (
-        <ListRow
-          key={s.id}
-          verticalPadding="large"
-          arrowType="right"
-          withTouchEffect
-          onClick={() => onSelect(s)}
-          contents={
-            <>
-              <Paragraph typography="t5" fontWeight="medium">
-                {s.title}
-              </Paragraph>
-              {s.description ? (
-                <>
-                  <Spacing size={4} />
-                  <Paragraph typography="t7" color="#8B95A1">
-                    {s.description}
-                  </Paragraph>
-                </>
-              ) : null}
-            </>
-          }
-        />
-      ))}
-    </ul>
+    <div style={{ padding: '12px 16px 4px' }}>
+      <div
+        style={{
+          background: bgColor,
+          borderRadius: 20,
+          padding: '24px 20px',
+          border: `1px solid ${hasPending ? '#FECACA' : '#BBF7D0'}`,
+        }}
+      >
+        {hasPending ? (
+          <>
+            <Paragraph typography="t7" fontWeight="medium" color="#991B1B">
+              리마인드가 필요해요
+            </Paragraph>
+            <Spacing size={4} />
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <span style={{ fontSize: 40, fontWeight: 800, color: accentColor, lineHeight: 1 }}>
+                {totalNotSubmitted}
+              </span>
+              <span style={{ fontSize: 18, fontWeight: 600, color: accentColor }}>명</span>
+            </div>
+            <Spacing size={4} />
+            <Paragraph typography="t7" color="#7F1D1D">
+              {pendingStudyCount}개 스터디에서 미제출
+            </Paragraph>
+            {remindTargetRoundId ? (
+              <>
+                <Spacing size={16} />
+                <Button
+                  display="block"
+                  color="primary"
+                  onClick={() => onRemind(remindTargetRoundId)}
+                >
+                  리마인드 보내기
+                </Button>
+              </>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <Paragraph typography="t6" fontWeight="medium" color="#166534">
+              전원 제출 완료! 🎉
+            </Paragraph>
+            <Spacing size={4} />
+            <Paragraph typography="t5" fontWeight="bold" color={accentColor}>
+              {totalStudies}개 스터디 모두 제출했어요
+            </Paragraph>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

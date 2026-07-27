@@ -1,10 +1,4 @@
-/**
- * 날짜 관련 유틸리티 함수
- */
 
-/**
- * 마감일 기반 긴급도 계산
- */
 export function getDeadlineUrgency(dueAt: string | number | null): { color: string; label: string; bold?: boolean } {
   if (!dueAt) {
     return { color: '#8B95A1', label: '마감일 미정' };
@@ -31,27 +25,4 @@ export function getDeadlineUrgency(dueAt: string | number | null): { color: stri
   }
 
   return { color: '#34C759', label: `${diffDays}일 남음` };
-}
-
-/**
- * 제출률 기반 색상 계산
- */
-export function getRateColor(rate: number): string {
-  if (rate >= 100) {
-    return '#34C759'; // Green
-  }
-
-  if (rate >= 75) {
-    return '#FFCC00'; // Yellow
-  }
-
-  if (rate >= 50) {
-    return '#FF9500'; // Orange
-  }
-
-  if (rate > 0) {
-    return '#FF3B30'; // Red
-  }
-
-  return '#8B95A1'; // Gray
 }

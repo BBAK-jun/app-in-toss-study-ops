@@ -28,7 +28,8 @@ import {
   removeParticipant,
   updateStudy,
 } from '../api/studies';
-import { getDeadlineUrgency, getRateColor } from '../lib/formatDate';
+import { getDeadlineUrgency } from '../lib/formatDate';
+import { rateHexColor } from '../components/RateBadge';
 
 type TabValue = 'rounds' | 'participants';
 
@@ -192,7 +193,7 @@ export function StudyDetailPage() {
                 {rounds.map((r) => {
                   const summary = roundSummaries?.find((s) => s.roundId === r.id);
                   const urgency = getDeadlineUrgency(r.dueAt);
-                  const rateColor = summary ? getRateColor(summary.rate) : '#8B95A1';
+                  const rateColor = summary ? rateHexColor(summary.rate) : '#8B95A1';
                   const pct = summary ? Math.round(summary.rate * 100) : null;
                   return (
                     <ListRow
