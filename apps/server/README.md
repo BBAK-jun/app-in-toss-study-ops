@@ -155,7 +155,7 @@ AE는 non-critical best-effort 메트릭이므로 fail-fast 검사 대상이 아
 Workers Paid($5/mo) 전환 시 10M data points/월 + $0.25/M 추가. 본 프로젝트 트래픽에서는
 Free tier로 충분.
 
-### Query (Phase 3 — 미구현)
+### Query (Phase 3)
 
 AE SQL API로 외부에서 집계 쿼리. Worker 내부 route에서 Cloudflare API token으로 호출.
 
@@ -165,6 +165,23 @@ AE SQL API로 외부에서 집계 쿼리. Worker 내부 route에서 Cloudflare A
 ```
 
 엔드포인트: `https://api.cloudflare.com/client/v4/accounts/<account_id>/analytics_engine/sql`
+
+#### 메트릭 API 엔드포인트
+
+인증: 기존 `authMiddleware` 통과. ADR-011 RBAC 한계 승계.
+
+| 메트릭 | Endpoint | 파라미터 |
+|---|---|---|
+| error rate by event | `GET /admin/logs/metrics?type=error_rate` | `window=1h\|6h\|24h\|7d\|30d` |
+| top N events by count | `GET /admin/logs/metrics?type=top_events` | `window`, `limit=1~50` |
+| p95 duration by path | `GET /admin/logs/metrics?type=p95_duration` | `window`, `limit` |
+| 일별 레벨별 카운트 | `GET /admin/logs/metrics?type=timeseries` | `window` |
+
+응답: `{ type, window, env, limit, cached, rows: AeQueryResultRow[] }`. 30s in-memory 캐시
+적용 (AE 샘플링 + 수집 지연 수분이므로 더 짧은 캐시는 무의미).
+
+로컬 dev에서는 CF_API_TOKEN 미설정시 503 ANALYTICS_ENGINE_ERROR 반환 — AE reads는
+네트워크 호출이므로 명시적 셋업 필요.
 
 ## MCP 서버 (Sisyphus agent용)
 

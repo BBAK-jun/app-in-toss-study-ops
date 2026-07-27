@@ -12,6 +12,7 @@ import { studyRoutes } from './routes/studies';
 import { roundRoutes } from './routes/rounds';
 import { logRoutes } from './routes/logs';
 import { adminLogRoutes } from './routes/admin/logs';
+import { adminLogMetricsRoutes } from './routes/admin/logs-metrics';
 import { runRetentionJob } from './scheduled';
 import { assertBootEnvironment, logBootInfo } from './boot-check';
 import { HttpError, formatHttpError } from './lib/http-error';
@@ -45,6 +46,7 @@ protectedApi.route('/studies', studyRoutes);
 protectedApi.route('/rounds', roundRoutes);
 protectedApi.route('/logs', logRoutes);
 protectedApi.route('/admin/logs', adminLogRoutes);
+protectedApi.route('/admin/logs', adminLogMetricsRoutes);
 
 app.route('/', protectedApi);
 

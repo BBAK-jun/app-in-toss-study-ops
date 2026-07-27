@@ -11,6 +11,7 @@ export type ApiErrorCode =
   | 'CONFLICT'
   | 'TOSS_AUTH_FAILED'
   | 'DISCORD_WEBHOOK_FAILED'
+  | 'ANALYTICS_ENGINE_ERROR'
   | 'INTERNAL_ERROR';
 
 // 에러 본문 (error 객체 내부)

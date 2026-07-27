@@ -9,10 +9,12 @@
   // Production via `wrangler deploy --env production`. See ADR-006.
   // ALLOWED_ORIGINS: dev는 localhost 화이트리스트가 하드코딩되어 있어 var 불필요.
   // prod에서는 env.production.vars.ALLOWED_ORIGINS 에서 주입 (콤마 구분). ADR-011.
+  // CLOUDFLARE_ACCOUNT_ID: AE SQL API 호출용 (ADR-013 Phase 3). secret 아님 — 대시보드 노출 ID.
   "vars": {
     "ENVIRONMENT": "dev",
     "TOSS_AUTH_MODE": "dev",
-    "TOSS_API_BASE_URL": "https://apps-in-toss-api.toss.im"
+    "TOSS_API_BASE_URL": "https://apps-in-toss-api.toss.im",
+    "CLOUDFLARE_ACCOUNT_ID": ""
   },
 
   // Local dev D1 — also used by `wrangler dev` for the local sqlite file.
@@ -67,7 +69,9 @@
         "TOSS_API_BASE_URL": "https://apps-in-toss-api.toss.im",
         // CORS 화이트리스트 — 콤마로 구분된 origin 리스트. ADR-011.
         // 실제 앱인토스 WebView origin들로 교체 필요. 미설정 시 모든 cross-origin 요청 거부.
-        "ALLOWED_ORIGINS": "https://apps-in-toss.toss.im"
+        "ALLOWED_ORIGINS": "https://apps-in-toss.toss.im",
+        // AE SQL API 호출용 account ID (ADR-013 Phase 3). 배포시 실제 값으로 override.
+        "CLOUDFLARE_ACCOUNT_ID": ""
       },
 
       // Prod D1 — separate instance from dev. See ADR-007.
