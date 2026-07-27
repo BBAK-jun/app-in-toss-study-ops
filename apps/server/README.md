@@ -148,7 +148,7 @@ AE는 non-critical best-effort 메트릭이므로 fail-fast 검사 대상이 아
 |---|---|---|
 | Data points written | 100,000/day | `writeDataPoint()` 1회 호출 = 1 data point |
 | Read queries (SQL API) | 10,000/day | ADR-013 Phase 3에서 사용 |
-| 보관 기간 | 3개월 (고정) | 장기 보관은 D1 + 향후 R2 파이프라인 |
+| 보관 기간 | 3개월 (고정) | 장기 보관은 [ADR-014 R2 + Parquet](../wiki/src/content/decisions/adr-014-r2-parquet-archiving.md) |
 | 필드 제한 | 1 index + 20 blobs + 20 doubles | per data point |
 | Blob 총 크기 | 16 KB | per data point |
 

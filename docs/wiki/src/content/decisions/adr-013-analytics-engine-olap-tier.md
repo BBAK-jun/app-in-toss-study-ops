@@ -1,7 +1,7 @@
 ---
 id: adr-013
 title: Analytics Engine 도입 — D1 + AE 이중 적재 (메트릭/상세 역할 분리)
-status: proposed
+status: accepted
 date: 2026-07-27
 supersededBy: null
 tags: [server, observability, analytics-engine, olap, d1, dual-write, product-analytics]
@@ -180,8 +180,8 @@ if (shouldSample(entry, ctx.env)) {
 ### 6. 클라이언트 로그 라우트 영향
 
 `POST /logs`의 `insertLogBatch` 호출 전에, batch의 각 entry에 대해 AE write도 수행.
-AE는 `writeDataPoints()` (복수형) batch API 지원 → 단일 Worker invocation 내
-250 data points 제한 안에서 100-entry batch 안전.
+AE 런타임은 `writeDataPoint` (단수형)만 지원하므로, 어댑터에서 내부 루프로 배치 처리
+(단일 Worker invocation 내 250 data points 제한 안에서 100-entry batch 안전).
 
 ### 7. Dashboard SQL 쿼리 엔드포인트
 
@@ -226,7 +226,7 @@ AE SQL API 호출은 Cloudflare 계정 API 토큰(`CF_API_TOKEN` secret) 필요.
 
 - **AE**: 3개월 고정 (설정 불가). 시계열 트렌드 분석은 3개월 창 내에서.
 - **D1**: ADR-011의 레벨별 보관 유지 (debug 7일 ~ fatal 365일).
-- **장기 보관/전수 분석**: 후속 ADR에서 R2 + Parquet 파이프라인 제안 예정.
+- **장기 보관/전수 분석**: [ADR-014](./adr-014-r2-parquet-archiving.md) R2 + Parquet 파이프라인.
 
 ### 10. 제품 분석 인프라로의 확장 (Product Analytics)
 
@@ -314,7 +314,7 @@ Workers Paid($5/mo)로 전환 시 AE 10M/월 = **333k/day**까지 확장 가능.
   route 신규. 약 200 LOC 추가 예상.
 - **2 시스템 운영** — D1 스키마 마이그레이션 + AE dataset 관리 이중 부담.
 - **인증 비밀 추가** — `CF_API_TOKEN` secret. 권한은 "Analytics Engine read" 최소 권장.
-- **3개월 보관 한계** — 장기 트렌드 분석(1년+) 불가. 후속 ADR(R2 + Parquet)로 보완 예정.
+- **3개월 보관 한계** — 장기 트렌드 분석(1년+)은 [ADR-014 R2 + Parquet](./adr-014-r2-parquet-archiving.md)로 보완.
 - **고카디널리티 blob 리스크** — `userId` 같은 필드가 equitable sampling에 미치는 영향을
   초기 1~2주간 모니터링 필요.
 
@@ -336,7 +336,7 @@ Workers Paid($5/mo)로 전환 시 AE 10M/월 = **333k/day**까지 확장 가능.
 - **장점**: 거의 무제한 보관, 컬럼 스토어, $0에 가까운 비용
 - **기각**: **실시간 아님**. Parquet 직렬화 → R2 업로드 → 쿼리 파이프라인 구축 필요.
   "최근 1시간 error rate" 같은 실시간 대시보드에 부적합. 배치 분석용.
-  → 본 ADR과 **배타적이지 않음**. 후속 ADR에서 "AE 3개월 + R2 영구" 조합 제안 예정.
+  → 본 ADR과 **배타적이지 않음**. [ADR-014](./adr-014-r2-parquet-archiving.md)에서 "AE 3개월 + R2 영구" 조합으로 구체화.
 
 ### C. ClickHouse Cloud
 - **장점**: 엔터프라이즈급 OLAP, 가장 강력한 기능
@@ -377,9 +377,9 @@ Workers Paid($5/mo)로 전환 시 AE 10M/월 = **333k/day**까지 확장 가능.
 - `/admin/logs` 페이지에 차트 컴포넌트 추가 (chart.js / recharts / 직접 SVG)
 - 기존 row 리스트는 D1 조회 유지
 
-### Phase 5 (후속 ADR) — R2 Parquet 아카이빙
+### Phase 5 — R2 Parquet 아카이빙 ([ADR-014](./adr-014-r2-parquet-archiving.md))
 - AE 3개월 + D1 보관 만료 분을 R2 Parquet으로 영구 보관
-- DuckDB 워크스타일 분석용. 본 ADR 범위 외.
+- DuckDB 워크스타일 분석용. 구체적 설계는 ADR-014 참조.
 
 ## Open Questions
 
