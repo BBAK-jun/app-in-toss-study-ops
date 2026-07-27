@@ -26,14 +26,19 @@ jobs:
       passed: ${{ steps.check.outputs.passed }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build:shared
-      - run: npm run typecheck
-      - run: npm run build
+          node-version: 24
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:shared
+      - run: pnpm build:client-sdk
+      - run: pnpm typecheck
+      - run: pnpm build
       - id: check
         run: echo "passed=true" >> "$GITHUB_OUTPUT"
 
@@ -45,12 +50,16 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build:shared
+          node-version: 24
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:shared
       - name: Deploy Worker (dev)
         working-directory: apps/server
         run: npx wrangler deploy
@@ -66,12 +75,17 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build:shared
+          node-version: 24
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.2
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:shared
+      - run: pnpm build:client-sdk
 
       - name: Write ait credentials
         run: |
@@ -85,7 +99,7 @@ jobs:
 
       - name: Build & Deploy client (dev)
         working-directory: apps/client
-        run: npm run deploy:dev
+        run: pnpm deploy:dev
         env:
           VITE_APP_ENV: development
           VITE_API_BASE_URL: https://studyops-server.mountain-race.workers.dev
