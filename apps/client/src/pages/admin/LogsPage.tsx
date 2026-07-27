@@ -7,6 +7,7 @@ import { AppShell } from '../../components/AppShell';
 import { ErrorBoundary } from '../../components/ErrorBoundary';
 import { ApiError } from '../../api/client';
 import { fetchLogs } from '../../api/logs';
+import { LogsMetricsPanel } from './LogsMetricsPanel';
 
 const LEVEL_COLORS: Record<LogLevel, string> = {
   debug: '#8B95A1',
@@ -85,6 +86,9 @@ export function LogsPage() {
   return (
     <AppShell title="로그 대시보드" onBack={() => navigate('/')}>
       <ErrorBoundary>
+        {/* AE 메트릭 패널 (ADR-013 Phase 4) */}
+        <LogsMetricsPanel />
+
         {/* 필터 */}
         <form onSubmit={handleFilterSubmit} style={{ padding: '16px' }}>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

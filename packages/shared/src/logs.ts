@@ -103,6 +103,54 @@ export const LOG_EVENTS = {
 
 export type LogEvent = (typeof LOG_EVENTS)[keyof typeof LOG_EVENTS];
 
+// ─── 메트릭 타입 — ADR-013 Phase 3 ──────────────────────────────────────────
+// GET /admin/logs/metrics?type=... 응답. AE SQL API 결과를 그대로 전달.
+// rows 스키마는 메트릭 타입마다 다름 — 아래 XxxRow 인터페이스 참조.
+
+export type LogMetricType = 'error_rate' | 'top_events' | 'p95_duration' | 'timeseries';
+export type LogMetricWindow = '1h' | '6h' | '24h' | '7d' | '30d';
+
+export interface ErrorRateRow {
+  event: string;
+  error_count: number;
+  total_count: number;
+}
+export interface TopEventsRow {
+  event: string;
+  count: number;
+}
+export interface P95DurationRow {
+  path: string;
+  p95_duration_ms: number;
+  sample_count: number;
+}
+export interface TimeseriesRow {
+  bucket: string; // ISO timestamp 문자열 (AE returns string)
+  level: string;
+  count: number;
+}
+
+export type LogMetricRow =
+  | ErrorRateRow
+  | TopEventsRow
+  | P95DurationRow
+  | TimeseriesRow;
+
+export interface LogMetricResult {
+  type: LogMetricType;
+  window: LogMetricWindow;
+  env: 'dev' | 'production';
+  limit?: number;
+  cached: boolean;
+  rows: LogMetricRow[];
+}
+
+export interface LogMetricQuery {
+  type: LogMetricType;
+  window?: LogMetricWindow;
+  limit?: number;
+}
+
 // ─── 표준 로그 엔트리 ─────────────────────────────────────────────────────
 // 클라이언트 → 서버, 서버 내부, 양쪽 모두 이 형태.
 // DB 컬럼과 1:1 매핑 (apps/server/src/db/schema.ts::logs 참조).

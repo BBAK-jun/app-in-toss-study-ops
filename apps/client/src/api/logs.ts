@@ -1,5 +1,10 @@
 import { apiFetch } from './client';
-import type { LogQuery, LogQueryResult } from '@studyops/shared';
+import type {
+  LogQuery,
+  LogQueryResult,
+  LogMetricQuery,
+  LogMetricResult,
+} from '@studyops/shared';
 
 // GET /admin/logs — 로그 대시보드 조회.
 // cursor-based pagination, 동적 필터.
@@ -7,6 +12,14 @@ export async function fetchLogs(params: LogQuery = {}): Promise<LogQueryResult> 
   const qs = buildQueryString(params);
   const path = qs ? `/admin/logs?${qs}` : '/admin/logs';
   return apiFetch<LogQueryResult>(path);
+}
+
+// GET /admin/logs/metrics — AE 집계 메트릭 (ADR-013).
+export async function fetchLogsMetrics(params: LogMetricQuery): Promise<LogMetricResult> {
+  const entries: string[] = [`type=${encodeURIComponent(params.type)}`];
+  if (params.window) entries.push(`window=${params.window}`);
+  if (params.limit != null) entries.push(`limit=${params.limit}`);
+  return apiFetch<LogMetricResult>(`/admin/logs/metrics?${entries.join('&')}`);
 }
 
 function buildQueryString(params: LogQuery): string {
