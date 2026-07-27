@@ -125,6 +125,36 @@ function buildTimeseriesSql(window: string, env: 'dev' | 'production'): string {
   `;
 }
 
+// ─── 카디널리티 진단 (ADR-013 Open Question #1) ────────────────────────────
+// userId(blob7) 가 equitable sampling 에 미치는 영향을 점검하기 위한 진단 쿼리.
+// 운영자가 직접 AE SQL API 또는 admin 터미널에서 실행. 엔드포인트 노출은 Phase 4+.
+//
+// 판단 기준 (경험적):
+//   - distinct_users / total_rows > 0.5 → 고카디널리티 경고. 별도 dataset 분리 검토.
+//   - top_user_ratio (TOP 1 user / total) < 0.01 → long-tail 분포. 분리 효과 미미.
+//
+// 실행 예:
+//   wrangler dev --local 실행 후 별도 AE SQL API 클라이언트로 아래 쿼리 POST.
+const CARDINALITY_DIAGNOSTIC_SQL = `
+  SELECT
+    COUNT(DISTINCT blob7) AS distinct_users,
+    SUM(_sample_interval) AS total_rows,
+    COUNT(DISTINCT blob7) * 1.0 / SUM(_sample_interval) AS cardinality_ratio,
+    max_per_user AS top_user_count,
+    max_per_user * 1.0 / SUM(_sample_interval) AS top_user_ratio
+  FROM studyops_logs
+  ARRAY JOIN (
+    SELECT max(c) AS max_per_user
+    FROM (
+      SELECT blob7, SUM(_sample_interval) AS c
+      FROM studyops_logs
+      WHERE timestamp > NOW() - INTERVAL '7' DAY AND blob7 != ''
+      GROUP BY blob7
+    )
+  )
+  WHERE timestamp > NOW() - INTERVAL '7' DAY AND blob7 != ''
+`;
+
 // ─── 라우트 ────────────────────────────────────────────────────────────────
 adminLogMetricsRoutes.get('/metrics', async (c) => {
   const type = c.req.query('type');
@@ -179,7 +209,7 @@ adminLogMetricsRoutes.get('/metrics', async (c) => {
   }
 });
 
-// Export internal helpers for unit tests.
+// Export internal helpers for unit tests + diagnostic SQL.
 export const __test = {
   buildErrorRateSql,
   buildTopEventsSql,
@@ -191,4 +221,5 @@ export const __test = {
   cache,
   CACHE_TTL_MS,
   ALLOWED_WINDOWS,
+  CARDINALITY_DIAGNOSTIC_SQL,
 };

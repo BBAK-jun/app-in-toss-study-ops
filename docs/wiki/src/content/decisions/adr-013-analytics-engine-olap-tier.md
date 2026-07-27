@@ -384,7 +384,10 @@ Workers Paid($5/mo)로 전환 시 AE 10M/월 = **333k/day**까지 확장 가능.
 ## Open Questions
 
 1. **userId 카디널리티 영향** — 초기 1~2주 모니터링 후, 필요하면 `studyops_logs_users`
-   별도 dataset으로 분리. Phase 2 검증 항목.
+   별도 dataset으로 분리. 진단 쿼리는 `apps/server/src/routes/admin/logs-metrics.ts` 의
+   `CARDINALITY_DIAGNOSTIC_SQL` 상수로 준비됨. 판단 기준:
+   - `cardinality_ratio > 0.5` (distinct users / total rows) → 고카디널리티 경고, dataset 분리 검토
+   - `top_user_ratio < 0.01` (TOP 1 user / total) → long-tail 분포, 분리 효과 미미
 2. **ABR 샘플링 정확도** — 30일 time range 쿼리가 1일 time range 대비 얼마나
    부정확한지 측정. 공식 문서상 "fixed time budget"이지만 실측 필요.
 3. **메트릭 캐싱 전략** — KV(글로벌, 유료 tier 확장시) vs D1 cache table vs 인메모리.
