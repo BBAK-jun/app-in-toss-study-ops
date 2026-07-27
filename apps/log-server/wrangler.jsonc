@@ -14,7 +14,7 @@
     {
       "binding": "DB",
       "database_name": "studyops-logs-db-dev",
-      "database_id": "PLACEHOLDER_RUN_wrangler_d1_create",
+      "database_id": "3bb33835-e939-422b-9770-d112d08ae449",
       "migrations_dir": "src/db/migrations"
     }
   ],
@@ -55,7 +55,7 @@
         {
           "binding": "DB",
           "database_name": "studyops-logs-db-prod",
-          "database_id": "PLACEHOLDER_RUN_wrangler_d1_create",
+          "database_id": "3bb33835-e939-422b-9770-d112d08ae449",
           "migrations_dir": "src/db/migrations"
         }
       ],
