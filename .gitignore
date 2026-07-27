@@ -51,3 +51,6 @@ backups/
 
 # TypeScript
 *.tsbuildinfo
+
+# Backup files
+*.bak
