@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from '@tanstack/react-router';
+import { useQueryState, parseAsStringLiteral } from 'nuqs';
 import {
   BottomCTA,
   Button,
@@ -30,7 +31,7 @@ import { openDiscordWebhookModal } from '../ui/DiscordWebhookModal/openDiscordWe
 type TabValue = 'rounds' | 'participants';
 
 export function StudyDetailPage() {
-  const { studyId = '' } = useParams();
+  const { studyId = '' } = useParams({ strict: false });
   const navigate = useNavigate();
   const { openToast } = useToast();
 
@@ -42,7 +43,10 @@ export function StudyDetailPage() {
   const removeParticipantMutation = useRemoveParticipantMutation(studyId);
 
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<TabValue>('rounds');
+  const [tab, setTab] = useQueryState(
+    'tab',
+    parseAsStringLiteral(['rounds', 'participants']).withDefault('rounds'),
+  );
 
   usePageLayout({
     title: study?.title ?? '스터디',
@@ -53,7 +57,7 @@ export function StudyDetailPage() {
     const next = (rounds?.length ?? 0) + 1;
     const created = await openCreateRoundModal({ studyId, initialRoundNumber: next });
     if (created) {
-      navigate(`/rounds/${created.id}`);
+      navigate({ to: '/rounds/$roundId', params: { roundId: created.id } });
     }
   };
 
@@ -117,7 +121,7 @@ export function StudyDetailPage() {
                     verticalPadding="large"
                     arrowType="right"
                     withTouchEffect
-                    onClick={() => navigate(`/rounds/${r.id}`)}
+                    onClick={() => navigate({ to: '/rounds/$roundId', params: { roundId: r.id } })}
                     contents={
                       <>
                         <Paragraph typography="t5" fontWeight="medium">

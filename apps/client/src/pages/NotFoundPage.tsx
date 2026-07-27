@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { Button, Paragraph, Spacing } from '@toss/tds-mobile';
 
 export function NotFoundPage() {
@@ -13,7 +13,7 @@ export function NotFoundPage() {
         주소가 잘못됐거나, 삭제된 페이지일 수 있어요.
       </Paragraph>
       <Spacing size={20} />
-      <Button onClick={() => navigate('/', { replace: true })}>홈으로 가기</Button>
+      <Button onClick={() => navigate({ to: '/', replace: true })}>홈으로 가기</Button>
     </div>
   );
 }

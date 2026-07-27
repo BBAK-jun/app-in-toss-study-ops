@@ -1,47 +1,51 @@
-import { useMatches, useNavigate, useOutlet } from 'react-router-dom';
+import { Outlet, useRouter, useMatches } from '@tanstack/react-router';
 
 import { AppShell } from '../components/AppShell';
 import type { LayoutSpec, RouteHandle } from './types';
 import { usePageLayoutContext } from './PageLayoutContext';
 import { useRuntimeEnvironment } from '../runtime/RuntimeEnvironment';
 
-interface LeafMatch {
-  handle?: unknown;
-}
-
 export function GnbLayout() {
   const { isHostApp } = useRuntimeEnvironment();
   const { override } = usePageLayoutContext();
-  const navigate = useNavigate();
-  const outlet = useOutlet();
+  const router = useRouter();
 
   const layout = resolveLayoutSpec(useMatches());
 
   if (layout?.hideChrome || isHostApp) {
-    return <main style={{ flex: 1, paddingBottom: layout?.hideBottomSafeArea ? 0 : 112 }}>{outlet}</main>;
+    return (
+      <main style={{ flex: 1, paddingBottom: layout?.hideBottomSafeArea ? 0 : 112 }}>
+        <Outlet />
+      </main>
+    );
   }
 
   const title = resolveTitle(layout, override.title);
   const right = layout?.right;
 
   return (
-    <AppShell title={title} onBack={layout?.back ? () => navigate(-1) : undefined} right={right}>
-      {outlet}
+    <AppShell
+      title={title}
+      onBack={layout?.back ? () => router.history.back() : undefined}
+      right={right}
+    >
+      <Outlet />
     </AppShell>
   );
 }
 
-function resolveLayoutSpec(matches: LeafMatch[]): LayoutSpec | undefined {
+function resolveLayoutSpec(matches: Array<{ staticData?: unknown }>): LayoutSpec | undefined {
   const leaf = matches.at(-1);
-  const handle = leaf?.handle as RouteHandle | undefined;
+  const handle = leaf?.staticData as RouteHandle | undefined;
   return handle?.layout;
 }
 
-function resolveTitle(layout: LayoutSpec | undefined, dynamicTitle: string | undefined): string {
+function resolveTitle(
+  layout: LayoutSpec | undefined,
+  dynamicTitle: string | undefined,
+): string {
   if (dynamicTitle !== undefined) return dynamicTitle;
   if (layout?.title === undefined) return '';
-  if (typeof layout.title === 'function') {
-    return '';
-  }
+  if (typeof layout.title === 'function') return '';
   return layout.title;
 }

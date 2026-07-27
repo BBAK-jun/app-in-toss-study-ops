@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useRouter } from '@tanstack/react-router';
 import { BottomCTA, Button, Modal, Paragraph, Spacing, useToast } from '@toss/tds-mobile';
 
 import { ErrorBoundary } from '../components/ErrorBoundary';
@@ -7,8 +7,9 @@ import { ApiError } from '../lib/api-client';
 import { useReminderMessageMutation, useShareDiscordMutation } from '../query/roundQueries';
 
 export function ReminderPage() {
-  const { roundId = '' } = useParams();
+  const { roundId = '' } = useParams({ strict: false });
   const navigate = useNavigate();
+  const router = useRouter();
   const { openToast } = useToast();
 
   const reminderMutation = useReminderMessageMutation(roundId);
@@ -97,7 +98,7 @@ export function ReminderPage() {
           <Button variant="weak" display="block" onClick={handleCopy} disabled={!message}>
             복사하기
           </Button>
-          <Button variant="weak" display="block" onClick={() => navigate(-1)}>
+          <Button variant="weak" display="block" onClick={() => router.history.back()}>
             뒤로
           </Button>
         </div>
