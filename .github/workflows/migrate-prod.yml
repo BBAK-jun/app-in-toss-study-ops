@@ -60,17 +60,9 @@ jobs:
           echo "❌ confirm input is not 'yes' — aborting. Set confirm=yes in workflow_dispatch to proceed."
           exit 1
 
-      - name: Apply migrations (dry run)
-        if: ${{ github.event.inputs.dry_run == 'true' }}
-        working-directory: apps/server
-        run: |
-          echo "⚠️  Dry run mode — checking what would be applied. Re-run with dry_run=false to apply."
-          echo "Use 'pnpm db:apply:prod' locally to apply."
-          pnpm exec wrangler d1 migrations apply studyops-db-prod --remote --env production --dry-run
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
+      # dry_run=true 면 위 'List pending migrations' 단계만 실행(=dry-run)하고 종료.
+      # (wrangler 4.114 의 `d1 migrations apply` 는 --dry-run 플래그를 지원하지 않으므로
+      #  별도 dry-run apply 단계 대신 list 단계로 대체.)
       - name: Apply migrations
         if: ${{ github.event.inputs.dry_run != 'true' && github.event.inputs.confirm == 'yes' }}
         working-directory: apps/server
