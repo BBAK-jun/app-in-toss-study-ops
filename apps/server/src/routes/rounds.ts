@@ -8,50 +8,18 @@ import { createDb, type Database } from '../db/client';
 import { studies, rounds, participants, submissions } from '../db/schema';
 import { buildStatusPayload, sendDiscordWebhook } from '../discord/webhook';
 import type {
-  RoundDto,
   RoundStatusDto,
   SubmittedEntry,
-  SubmissionDto,
   SubmissionCreateInput,
   ParticipantDto,
   ShareDiscordRequest,
   ShareDiscordResponse,
 } from '@studyops/shared';
+import { computeSubmissionRate, ratePercent } from '../domain/submission';
+import { assertStudyOwner } from '../lib/authorization';
+import { toRoundDto, toParticipantDto, toSubmissionDto } from './mappers';
 
 export const roundRoutes = new Hono<AppEnv>();
-
-// ─── mappers ───────────────────────────────────────────────────────────────
-function toRoundDto(row: typeof rounds.$inferSelect): RoundDto {
-  return {
-    id: row.id,
-    studyId: row.studyId,
-    roundNumber: row.roundNumber,
-    title: row.title,
-    dueAt: row.dueAt,
-    createdAt: row.createdAt,
-  };
-}
-
-function toParticipantDto(row: typeof participants.$inferSelect): ParticipantDto {
-  return {
-    id: row.id,
-    studyId: row.studyId,
-    name: row.name,
-    discordHandle: row.discordHandle,
-    createdAt: row.createdAt,
-  };
-}
-
-function toSubmissionDto(row: typeof submissions.$inferSelect): SubmissionDto {
-  return {
-    id: row.id,
-    roundId: row.roundId,
-    participantId: row.participantId,
-    url: row.url,
-    note: row.note,
-    createdAt: row.createdAt,
-  };
-}
 
 // ─── 회차 + 소유권 로드 ────────────────────────────────────────────────────
 async function loadOwnedRound(
@@ -67,9 +35,7 @@ async function loadOwnedRound(
   if (!study) {
     throw new HttpError(404, 'NOT_FOUND', `Study for round ${roundId} not found`);
   }
-  if (study.ownerId !== userKey) {
-    throw new HttpError(403, 'FORBIDDEN', 'You do not own this study');
-  }
+  assertStudyOwner(study.ownerId, userKey);
   return { round, study };
 }
 
@@ -101,7 +67,7 @@ async function computeRoundStatus(
     .map(toParticipantDto);
 
   const total = allParticipants.length;
-  const rate = total > 0 ? submitted.length / total : 0;
+  const rate = computeSubmissionRate(submitted.length, total);
 
   return {
     roundId: round.id,
@@ -202,7 +168,7 @@ roundRoutes.post('/:id/reminder-message', async (c) => {
   const { round } = await loadOwnedRound(db, c.req.param('id'), userKey);
   const status = await computeRoundStatus(db, round);
 
-  const pct = Math.round(status.rate * 100);
+  const pct = ratePercent(status.rate);
   const lines: string[] = [];
   lines.push(`📚 [${status.roundNumber}회차] 제출 리마인드`);
   lines.push(`제출률: ${status.submitted.length}/${status.total} (${pct}%)`);

@@ -4,6 +4,7 @@ import { z } from 'zod3';
 import { eq, desc, asc, sql } from 'drizzle-orm';
 import { createDb } from '../db/client';
 import { studies, rounds, participants, submissions } from '../db/schema';
+import { computeSubmissionRate, ratePercent } from '../domain/submission';
 
 export class StudyOpsMcpAgent extends McpAgent {
   server = new McpServer({
@@ -153,7 +154,7 @@ export class StudyOpsMcpAgent extends McpAgent {
 
         const total = allParticipants.length;
         const submittedCount = submitted.length;
-        const rate = total > 0 ? submittedCount / total : 0;
+        const rate = computeSubmissionRate(submittedCount, total);
 
         const data = {
           roundId: round.id,
@@ -163,8 +164,8 @@ export class StudyOpsMcpAgent extends McpAgent {
           dueAtIso: round.dueAt ? new Date(round.dueAt).toISOString() : null,
           total,
           submittedCount,
-          rate: Math.round(rate * 100) / 100,
-          ratePercent: Math.round(rate * 100),
+          rate: ratePercent(rate) / 100,
+          ratePercent: ratePercent(rate),
           submitted,
           notSubmitted,
         };
@@ -206,7 +207,7 @@ export class StudyOpsMcpAgent extends McpAgent {
 
           const total = allParticipants.length;
           const submittedCount = subs.length;
-          const rate = total > 0 ? submittedCount / total : 0;
+          const rate = computeSubmissionRate(submittedCount, total);
 
           if (rate <= maxRate) {
             results.push({
@@ -217,8 +218,8 @@ export class StudyOpsMcpAgent extends McpAgent {
               studyTitle: studyMap.get(round.studyId) ?? 'Unknown',
               total,
               submittedCount,
-              rate: Math.round(rate * 100) / 100,
-              ratePercent: Math.round(rate * 100),
+              rate: ratePercent(rate) / 100,
+              ratePercent: ratePercent(rate),
               dueAt: round.dueAt,
               dueAtIso: round.dueAt ? new Date(round.dueAt).toISOString() : null,
             });
