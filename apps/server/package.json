@@ -17,10 +17,10 @@
     "types": "wrangler types",
     "db:generate": "drizzle-kit generate",
     "db:apply:dev": "wrangler d1 migrations apply studyops-db-dev --local",
-    "db:apply:prod": "wrangler d1 migrations apply studyops-db-prod --remote",
+    "db:apply:prod": "wrangler d1 migrations apply studyops-db-prod --remote --env production",
     "db:list": "wrangler d1 list",
     "db:list-migrations:dev": "wrangler d1 migrations list studyops-db-dev --local",
-    "db:list-migrations:prod": "wrangler d1 migrations list studyops-db-prod --remote",
+    "db:list-migrations:prod": "wrangler d1 migrations list studyops-db-prod --remote --env production",
     "secrets:check": "node scripts/secrets-check.mjs"
   },
   "dependencies": {
