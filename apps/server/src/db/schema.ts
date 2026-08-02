@@ -27,6 +27,10 @@ export const rounds = sqliteTable('rounds', {
   title: text('title').notNull(),
   dueAt: integer('due_at'),
   createdAt: integer('created_at').notNull(),
+  // Round 상태 ADT(Open | Closed) 영속화. 도메인 모델이 스키마를 주도한다.
+  // 기존 행은 default 'open' 으로 OpenRound 가 된다.
+  status: text('status').notNull().default('open'),
+  closedAt: integer('closed_at'),
 });
 
 // ─── participants ─────────────────────────────────────────────────────────

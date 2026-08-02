@@ -8,8 +8,14 @@ import { corsMiddleware } from './middleware/cors';
 import { loggingMiddleware } from './middleware/logging';
 import { healthRoutes } from './routes/health';
 import { authRoutes } from './auth/routes';
-import { studyRoutes } from './routes/studies';
-import { roundRoutes } from './routes/rounds';
+import { studyRoutes } from './contexts/study/presentation/study-routes';
+import { roundRoutes } from './contexts/round/presentation/round-routes';
+import { systemClock } from './contexts/round/infrastructure/clock';
+import { cryptoIds } from './contexts/round/infrastructure/id-generator';
+import { D1UnitOfWork } from './contexts/round/infrastructure/unit-of-work';
+import { DrizzleStudyOwnershipService } from './contexts/round/infrastructure/study-ownership.drizzle';
+import { D1StudyUnitOfWork } from './contexts/study/infrastructure/unit-of-work';
+import { studyCryptoIds } from './contexts/study/infrastructure/id-generator';
 import { assertBootEnvironment, logBootInfo } from './boot-check';
 import { HttpError, formatHttpError } from './lib/http-error';
 import { StudyOpsMcpAgent } from './mcp/server';
@@ -31,6 +37,16 @@ app.use('*', logger());
 app.use('*', requestIdMiddleware);
 app.use('*', corsMiddleware);
 app.use('*', loggingMiddleware);
+// Round + Study 컨텍스트 DI 주입 — clock/ids 는 싱글턴, UoW/소유권 서비스는 요청마다 c.env.DB 로부터 생성.
+app.use('*', async (c, next) => {
+  c.set('clock', systemClock);
+  c.set('ids', cryptoIds);
+  c.set('newUow', () => new D1UnitOfWork(c.env.DB));
+  c.set('newOwnership', () => new DrizzleStudyOwnershipService(c.env.DB));
+  c.set('studyIds', studyCryptoIds);
+  c.set('newStudyUow', () => new D1StudyUnitOfWork(c.env.DB));
+  await next();
+});
 app.onError(errorHandler);
 
 app.route('/', healthRoutes);

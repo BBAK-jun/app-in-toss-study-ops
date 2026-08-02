@@ -27,6 +27,8 @@ interface RequiredRuntimeBindings {
 // Hono app 전체 컨텍스트 타입. 모든 라우트/미들웨어에서 공유.
 // Variables.user 는 authMiddleware 통과 후 세팅됨.
 // Variables.requestId 는 requestIdMiddleware 가 세팅 (X-Request-Id 응답 헤더 + 로그 추적).
+// Variables.{clock,ids,newUow,newOwnership} — Round 컨텍스트 DI (application 포트).
+//   구현체는 infrastructure 에 있고, index.ts 미들웨어가 c.env.DB 로부터 요청마다 주입한다.
 export type AppEnv = {
   // `Env`는 wrangler types가 생성한 전역 인터페이스 (worker-configuration.d.ts).
   // 거기에 secrets를 합친다.
@@ -34,5 +36,11 @@ export type AppEnv = {
   Variables: {
     user: { userKey: number };
     requestId: string;
+    clock: import('./contexts/round/application/ports').Clock;
+    ids: import('./contexts/round/application/ports').IdGenerator;
+    newUow: () => import('./contexts/round/application/ports').UnitOfWork;
+    newOwnership: () => import('./contexts/round/application/ports').StudyOwnershipService;
+    studyIds: import('./contexts/study/domain/aggregate').StudyIds;
+    newStudyUow: () => import('./contexts/study/application/ports').StudyUnitOfWork;
   };
 };
