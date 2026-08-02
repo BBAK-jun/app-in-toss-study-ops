@@ -104,6 +104,13 @@ MCP 도구는 **user-scoped가 아님** — operator/admin 관점에서 모든 �
 - **장점**: 범용 쿼리 인터페이스
 - **기각**: GraphQL 클라이언트 필요, MCP는 AI agent에 최적화
 
+## Amendments
+
+- **2026-08-03 — zod 단일 버전(v4) 통합 시도·연기**: 사전 감사가 잡은 "zod 이중 버전"을 제거하기 위해 시도.
+  - `@modelcontextprotocol/sdk@1.29.0`(현재 핀)의 `.tool()` 타입은 `ZodRawShapeCompat` = zod **v3** `ZodType`에 바운드 → v4 스키마(`ZodString`/`ZodDefault`)가 타입 거부. peer dep는 `^3.25 || ^4.0`을 명시하지만 **타입 정의는 v3 전용**.
+  - 최신 `1.30.0`으로 올리면 `agents@0.19.0`의 `McpAgent`와 private `_serverInfo` 충돌로 컴파일 실패 → 이것이 저장소가 1.29.0을 핀한 이유.
+  - 결론: `zod3` npm alias는 **load-bearing**. v4 단일화는 `agents`와 `@modelcontextprotocol/sdk`가 함께 v4 타입을 지원하는 버전 쌍이 나올 때까지 연기. `as any` 우회는 코딩 컨벤션(§3.2)상 금지.
+
 ## References
 
 - ADR-009 (MCP 통합 전략)

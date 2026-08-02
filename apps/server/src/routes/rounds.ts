@@ -15,7 +15,7 @@ import type {
   ShareDiscordRequest,
   ShareDiscordResponse,
 } from '@studyops/shared';
-import { computeSubmissionRate, ratePercent } from '../domain/submission';
+import { computeSubmissionRate, ratePercent } from '@studyops/shared';
 import { assertStudyOwner } from '../lib/authorization';
 import { toRoundDto, toParticipantDto, toSubmissionDto } from './mappers';
 

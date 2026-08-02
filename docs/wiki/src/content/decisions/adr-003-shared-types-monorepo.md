@@ -40,7 +40,9 @@ app-intoss-study-workspace/
 ```
 
 **`packages/shared` 규칙**:
-- 오직 타입(type/interface)만 export. 런타임 로직 금지.
+- 타입(type/interface) export 가 주. **순수 도메인 runtime 커널은 허용** — 인프라 의존 0개, 순수 함수만. ADR-011(`logs.ts` runtime 상수) 선례를 일반화.
+  - 허용: `src/domain/` 하위의 인프라 비의존 순수 도구 (예: `computeSubmissionRate`, `rateToTier`, 색상 매핑).
+  - 여전히 금지: Hono/Drizzle/MCP SDK 등 인프라 의존 코드, side-effect, 앱 전용 로직.
 - 의존성 없음 (`dependencies: {}`).
 - `tsconfig.json`에 `"composite": true`로 project references 지원.
 
@@ -58,8 +60,12 @@ app-intoss-study-workspace/
 - 단일 저장소이므로 일부 변경이 전체에 영향
 
 ### 완화
-- shared는 타입만 (런타임 코드 없음) → 트리셰이킹으로 번들에 미포함
+- shared의 runtime 코드는 순수 도메인만 → 사용처 번들에 포함되어도 안전 (로그 상수 ADR-011과 동일한 빌드 경로: `tsc -b`로 `dist/` 생성 후 서버/클라이언트가 해석)
 - shared가 50개 파일 이상 넘어가면 도메인별 서브패키지 분리 검토
+
+## Amendments
+
+- **2026-08-03**: "오직 타입만 export, 런타임 금지" 규칙 완화 → 인프라 비의존 **순수 도메인 runtime 커널 허용**. 근거: 점진적 DDD 리팩터에서 제출률 산술·tier 분류가 서버·클라이언트 양쪽에서 중복되어 단일 출처가 필요. `logs.ts`(ADR-011)가 이미 runtime 상수를 shared에 둔 선례. 인프라 의존 코드는 여전히 금지.
 
 ## Alternatives Considered
 

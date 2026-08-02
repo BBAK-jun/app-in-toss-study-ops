@@ -4,7 +4,7 @@ import { z } from 'zod3';
 import { eq, desc, asc, sql } from 'drizzle-orm';
 import { createDb } from '../db/client';
 import { studies, rounds, participants, submissions } from '../db/schema';
-import { computeSubmissionRate, ratePercent } from '../domain/submission';
+import { computeSubmissionRate, ratePercent } from '@studyops/shared';
 
 export class StudyOpsMcpAgent extends McpAgent {
   server = new McpServer({

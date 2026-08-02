@@ -9,6 +9,7 @@
     "dev:prod-preview": "npm run _warn:prod && wrangler dev --env production",
     "_warn:prod": "echo '⚠️  DEV:PROD-PREVIEW — This targets production D1 (--env production). Use only for testing against prod DB. Local sqlite NOT used.'",
     "build": "tsc --noEmit",
+    "predeploy": "npm run build -w packages/shared",
     "deploy": "wrangler deploy",
     "deploy:production": "wrangler deploy --env production",
     "typecheck": "tsc --noEmit",
