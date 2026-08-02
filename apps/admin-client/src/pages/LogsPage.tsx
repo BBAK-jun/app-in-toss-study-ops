@@ -4,10 +4,13 @@ import { LOG_LEVELS } from '@studyops/shared';
 import { useQueryStates, parseAsString } from 'nuqs';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { fetchLogs } from '../api/logs';
+import { LogsArchivePanel } from './LogsArchivePanel';
 
 const SOURCES: LogSource[] = ['client', 'server', 'cron', 'mcp'];
+type Tab = 'live' | 'archive';
 
 export function LogsPage() {
+  const [tab, setTab] = useState<Tab>('live');
   const [data, setData] = useState<LogQueryResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,8 +46,8 @@ export function LogsPage() {
   }, [buildQuery]);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    if (tab === 'live') refresh();
+  }, [refresh, tab]);
 
   const handleLoadMore = async () => {
     if (!data?.nextCursor) return;
@@ -75,86 +78,104 @@ export function LogsPage() {
         <span className="muted">StudyOps Admin</span>
       </div>
 
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+        {(['live', 'archive'] as Tab[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={tab === t ? 'btn btn-primary' : 'btn btn-secondary'}
+          >
+            {t === 'live' ? '실시간 로그' : '아카이브'}
+          </button>
+        ))}
+      </div>
+
       <ErrorBoundary>
-        <form className="filters" onSubmit={handleFilterSubmit}>
-          <select
-            value={level ?? ''}
-            onChange={(e) => setFilters({ level: e.target.value || null })}
-          >
-            <option value="">모든 레벨</option>
-            {LOG_LEVELS.map((l) => (
-              <option key={l} value={l}>{l}</option>
-            ))}
-          </select>
-
-          <select
-            value={source ?? ''}
-            onChange={(e) => setFilters({ source: e.target.value || null })}
-          >
-            <option value="">모든 소스</option>
-            {SOURCES.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-
-          <input
-            type="text"
-            placeholder="메시지 검색..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-
-          <button type="submit" className="btn btn-primary">필터 적용</button>
-        </form>
-
-        {error ? (
-          <div className="error-msg">
-            {error}
-            <button className="btn btn-secondary" onClick={refresh} style={{ marginLeft: 8 }}>
-              다시 시도
-            </button>
-          </div>
-        ) : null}
-
-        {loading ? (
-          <div className="loading">불러오는 중…</div>
-        ) : null}
-
-        {!loading && data ? (
-          data.logs.length === 0 ? (
-            <div className="empty">로그가 없어요.</div>
-          ) : (
-            <>
-              <div className="log-meta" style={{ marginBottom: 8 }}>
-                로그 {data.logs.length}개{data.total ? ` / 총 ${data.total}개` : ''}
-              </div>
-              <ul className="log-list">
-                {data.logs.map((log) => (
-                  <LogRowItem
-                    key={log.id}
-                    log={log}
-                    expanded={expandedId === log.id}
-                    onToggle={() =>
-                      setExpandedId(expandedId === log.id ? null : log.id)
-                    }
-                  />
+        {tab === 'archive' ? (
+          <LogsArchivePanel />
+        ) : (
+          <>
+            <form className="filters" onSubmit={handleFilterSubmit}>
+              <select
+                value={level ?? ''}
+                onChange={(e) => setFilters({ level: e.target.value || null })}
+              >
+                <option value="">모든 레벨</option>
+                {LOG_LEVELS.map((l) => (
+                  <option key={l} value={l}>{l}</option>
                 ))}
-              </ul>
+              </select>
 
-              {data.nextCursor ? (
-                <div className="load-more">
-                  <button
-                    className="btn btn-secondary btn-block"
-                    disabled={loadingMore}
-                    onClick={handleLoadMore}
-                  >
-                    {loadingMore ? '불러오는 중…' : '더 보기'}
-                  </button>
-                </div>
-              ) : null}
-            </>
-          )
-        ) : null}
+              <select
+                value={source ?? ''}
+                onChange={(e) => setFilters({ source: e.target.value || null })}
+              >
+                <option value="">모든 소스</option>
+                {SOURCES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+
+              <input
+                type="text"
+                placeholder="메시지 검색..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+
+              <button type="submit" className="btn btn-primary">필터 적용</button>
+            </form>
+
+            {error ? (
+              <div className="error-msg">
+                {error}
+                <button className="btn btn-secondary" onClick={refresh} style={{ marginLeft: 8 }}>
+                  다시 시도
+                </button>
+              </div>
+            ) : null}
+
+            {loading ? (
+              <div className="loading">불러오는 중…</div>
+            ) : null}
+
+            {!loading && data ? (
+              data.logs.length === 0 ? (
+                <div className="empty">로그가 없어요.</div>
+              ) : (
+                <>
+                  <div className="log-meta" style={{ marginBottom: 8 }}>
+                    로그 {data.logs.length}개{data.total ? ` / 총 ${data.total}개` : ''}
+                  </div>
+                  <ul className="log-list">
+                    {data.logs.map((log) => (
+                      <LogRowItem
+                        key={log.id}
+                        log={log}
+                        expanded={expandedId === log.id}
+                        onToggle={() =>
+                          setExpandedId(expandedId === log.id ? null : log.id)
+                        }
+                      />
+                    ))}
+                  </ul>
+
+                  {data.nextCursor ? (
+                    <div className="load-more">
+                      <button
+                        className="btn btn-secondary btn-block"
+                        disabled={loadingMore}
+                        onClick={handleLoadMore}
+                      >
+                        {loadingMore ? '불러오는 중…' : '더 보기'}
+                      </button>
+                    </div>
+                  ) : null}
+                </>
+              )
+            ) : null}
+          </>
+        )}
       </ErrorBoundary>
     </div>
   );

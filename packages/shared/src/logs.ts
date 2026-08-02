@@ -78,6 +78,7 @@ export const LOG_EVENTS = {
   INFRA_MIGRATION_FAILED: 'infra.migration.failed',
   INFRA_CRON_COMPLETED: 'infra.cron.completed',
   INFRA_LOG_RETENTION_RUN: 'infra.log.retention_run',
+  INFRA_LOG_ARCHIVE_RUN: 'infra.log.archive_run',
   INFRA_HTTP_CLIENT_ERROR: 'infra.http.client_error',
   INFRA_HTTP_SERVER_ERROR: 'infra.http.server_error',
 
@@ -102,6 +103,54 @@ export const LOG_EVENTS = {
 } as const;
 
 export type LogEvent = (typeof LOG_EVENTS)[keyof typeof LOG_EVENTS];
+
+// ─── 메트릭 타입 — ADR-013 Phase 3 ──────────────────────────────────────────
+// GET /admin/logs/metrics?type=... 응답. AE SQL API 결과를 그대로 전달.
+// rows 스키마는 메트릭 타입마다 다름 — 아래 XxxRow 인터페이스 참조.
+
+export type LogMetricType = 'error_rate' | 'top_events' | 'p95_duration' | 'timeseries';
+export type LogMetricWindow = '1h' | '6h' | '24h' | '7d' | '30d';
+
+export interface ErrorRateRow {
+  event: string;
+  error_count: number;
+  total_count: number;
+}
+export interface TopEventsRow {
+  event: string;
+  count: number;
+}
+export interface P95DurationRow {
+  path: string;
+  p95_duration_ms: number;
+  sample_count: number;
+}
+export interface TimeseriesRow {
+  bucket: string; // ISO timestamp 문자열 (AE returns string)
+  level: string;
+  count: number;
+}
+
+export type LogMetricRow =
+  | ErrorRateRow
+  | TopEventsRow
+  | P95DurationRow
+  | TimeseriesRow;
+
+export interface LogMetricResult {
+  type: LogMetricType;
+  window: LogMetricWindow;
+  env: 'dev' | 'production';
+  limit?: number;
+  cached: boolean;
+  rows: LogMetricRow[];
+}
+
+export interface LogMetricQuery {
+  type: LogMetricType;
+  window?: LogMetricWindow;
+  limit?: number;
+}
 
 // ─── 표준 로그 엔트리 ─────────────────────────────────────────────────────
 // 클라이언트 → 서버, 서버 내부, 양쪽 모두 이 형태.
@@ -198,4 +247,59 @@ export interface LogRow {
   version: string | null;
   userAgent: string | null;
   ipHash: string | null;
+}
+
+// ─── 아카이브 쿼리 — ADR-014 Phase 4 ───────────────────────────────────────
+// R2 JSONL 아카이브를 서버 사이드에서 쿼리. Worker가 R2 바인딩으로 직접 읽음.
+// (duckdb-wasm 모바일 WebView 비적합 → 서버 사이드 결정. ADR-014 Phase 4 참조.)
+
+export interface ArchiveStats {
+  objectCount: number;
+  totalBytes: number;
+  partitions: ArchivePartition[];
+}
+
+export interface ArchivePartition {
+  prefix: string;
+  key: string;
+  size: number;
+  uploaded: string | null;
+}
+
+export interface ArchiveQuery {
+  year?: number;
+  month?: number;
+  day?: number;
+  level?: LogLevel;
+  event?: string;
+  search?: string;
+  limit?: number;
+}
+
+export interface ArchiveRow {
+  id: number;
+  ts: number;
+  level: string;
+  source: string;
+  event: string;
+  message: string;
+  userId: number | null;
+  sessionId: string | null;
+  requestId: string | null;
+  method: string | null;
+  path: string | null;
+  status: number | null;
+  durationMs: number | null;
+  context: Record<string, unknown> | null;
+  stack: string | null;
+  env: string;
+  version: string | null;
+  userAgent: string | null;
+  ipHash: string | null;
+}
+
+export interface ArchiveQueryResult {
+  rows: ArchiveRow[];
+  scannedObjects: number;
+  truncated: boolean;
 }

@@ -4,6 +4,8 @@ import type { AppEnv } from './env';
 import { HttpError, formatHttpError } from './lib/http-error';
 import { logRoutes } from './routes/logs';
 import { adminLogRoutes } from './routes/admin/logs';
+import { adminLogArchiveRoutes } from './routes/admin/logs-archive';
+import { adminLogMetricsRoutes } from './routes/admin/logs-metrics';
 import { runRetentionJob } from './scheduled';
 
 const app = new Hono<AppEnv>();
@@ -43,12 +45,14 @@ app.onError((err, c) => {
 
 app.route('/logs', logRoutes);
 app.route('/admin/logs', adminLogRoutes);
+app.route('/admin/logs/archive', adminLogArchiveRoutes);
+app.route('/admin/logs/metrics', adminLogMetricsRoutes);
 
 app.get('/health', (c) => c.json({ ok: true, ts: Date.now() }));
 
 export default {
-  async fetch(request: Request, env: AppEnv['Bindings']): Promise<Response> {
-    return app.fetch(request, env);
+  async fetch(request: Request, env: AppEnv['Bindings'], ctx: ExecutionContext): Promise<Response> {
+    return app.fetch(request, env, ctx);
   },
 
   async scheduled(

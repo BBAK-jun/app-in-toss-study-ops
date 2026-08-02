@@ -12,6 +12,20 @@ SESSION_SECRET=change-me-to-a-long-random-string-at-least-32-chars
 # (옵션) 기본 Discord webhook — 개별 스터디에 webhook이 없을 때 폴백
 DISCORD_WEBHOOK_DEFAULT=
 
+# Analytics Engine SQL API (ADR-013 Phase 3). AE reads는 Cloudflare REST API 호출이므로
+# 별도 토큰 필요. 로컬 dev에서 미설정시 /admin/logs/metrics → 503 ANALYTICS_ENGINE_ERROR.
+#
+# 토큰 권한: 최소 "Account.Analytics Read" 권한만 부여 (least privilege).
+# 발급: Cloudflare Dashboard → My Profile → API Tokens → Create Token.
+#   - Permissions: Account > Account Analytics : Read
+#   - Account Resources: Include - Specific account - <본인 계정>
+#
+# 프로덕션은 wrangler secret 으로 등록:
+#   npx wrangler secret put CF_API_TOKEN --env production
+#
+# CLOUDFLARE_ACCOUNT_ID는 wrangler.jsonc vars 로 이미 주입됨 (secret 아님).
+CF_API_TOKEN=
+
 # (선택) 환경 식별자 — wrangler.jsonc vars 가 주입하므로 보통 생략.
 # 로컬에서 wrangler dev 시 .dev.vars 로도 오버라이드 가능:
 # ENVIRONMENT=dev
