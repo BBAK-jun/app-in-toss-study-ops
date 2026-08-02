@@ -24,7 +24,7 @@
     "secrets:check": "node scripts/secrets-check.mjs"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "1.29.0",
     "@studyops/shared": "*",
     "agents": "^0.19.0",
     "drizzle-orm": "^0.36.0",
