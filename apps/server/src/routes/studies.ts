@@ -6,7 +6,7 @@ import type { AppEnv } from '../env';
 import { HttpError } from '../lib/http-error';
 import { createDb } from '../db/client';
 import { studies, rounds, participants, submissions } from '../db/schema';
-import { computeSubmissionRate } from '../domain/submission';
+import { computeSubmissionRate } from '@studyops/shared';
 import { assertStudyOwner } from '../lib/authorization';
 import { toStudyDto, toRoundDto, toParticipantDto } from './mappers';
 import type {

@@ -1,6 +1,6 @@
 // Discord webhook 발송 + 현황 메시지 페이로드 생성. ARCHITECTURE.md 4-6 코드 기반.
 import { HttpError } from '../lib/http-error';
-import { ratePercent } from '../domain/submission';
+import { ratePercent, rateToTier, rateTierToDiscordInt } from '@studyops/shared';
 
 export interface DiscordEmbed {
   title?: string;
@@ -61,7 +61,7 @@ export function buildStatusPayload(opts: {
       {
         title: `[${opts.roundNumber}회차] ${opts.roundTitle}`,
         description: `제출률 **${opts.submittedCount}/${opts.total} (${pct}%)**\n마감: ${due}`,
-        color: pct >= 80 ? 0x22C55E : pct >= 50 ? 0xF59E0B : 0xEF4444,
+        color: rateTierToDiscordInt(rateToTier(opts.rate)),
         fields: opts.notSubmittedHandles.length
           ? [
               {

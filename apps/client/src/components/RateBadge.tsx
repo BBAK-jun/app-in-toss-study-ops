@@ -1,7 +1,7 @@
 import { Badge } from '@toss/tds-mobile';
-import { rateToTier, rateTierToTdsColor } from '../lib/rate';
+import { rateToTier, rateTierToTdsColor } from '@studyops/shared';
 
-// 제출률 → TDS Badge 색상 토큰. 임계 로직은 lib/rate 단일 출처.
+// 제출률 → TDS Badge 색상 토큰. 임계 로직은 @studyops/shared 단일 출처.
 // 공개 export 유지 — RoundDetailPage.tsx 가 rateBadgeColor(rate) === 'green' 비교로 사용.
 export function rateBadgeColor(rate: number): 'green' | 'yellow' | 'red' {
   return rateTierToTdsColor(rateToTier(rate));

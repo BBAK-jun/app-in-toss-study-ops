@@ -12,3 +12,6 @@ export type * from './errors';
 // logs.ts는 LOG_EVENTS 등 runtime const를 포함하므로 value export(`export *`) 사용.
 // 다른 모듈은 타입 전용이라 `export type *`. ADR-011.
 export * from './logs';
+
+// domain/ — 순수 도메인 runtime 커널 (인프라 비의존). ADR-003 개정(8/3), logs.ts 선례.
+export * from './domain/submission';

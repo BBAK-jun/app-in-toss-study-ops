@@ -1,4 +1,4 @@
-import { rateToTier, rateTierToHex } from './rate';
+import { rateToTier, rateTierToHex } from '@studyops/shared';
 
 /**
  * 날짜 관련 유틸리티 함수
@@ -36,7 +36,7 @@ export function getDeadlineUrgency(dueAt: string | number | null): { color: stri
 }
 
 /**
- * 제출률(0..1) 기반 색상. 임계 로직은 lib/rate 단일 출처.
+ * 제출률(0..1) 기반 색상. 임계 로직은 @studyops/shared 단일 출처.
  * 입력은 0..1 (RoundStatusDto.rate / RoundSummary.rate 와 일치).
  */
 export function getRateColor(rate: number): string {
