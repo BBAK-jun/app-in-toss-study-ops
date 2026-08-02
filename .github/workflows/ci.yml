@@ -1,12 +1,12 @@
 # ci.yml — PR/push 시 타입체크 + 빌드
-# 트리거: main 브랜치 PR, main push
+# 트리거: main / env-separation-d1-isolation 브랜치 PR 및 push
 name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, env-separation-d1-isolation]
   pull_request:
-    branches: [main]
+    branches: [main, env-separation-d1-isolation]
 
 concurrency:
   group: ci-${{ github.ref }}
