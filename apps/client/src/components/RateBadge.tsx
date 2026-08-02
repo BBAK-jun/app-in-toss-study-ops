@@ -1,11 +1,10 @@
 import { Badge } from '@toss/tds-mobile';
+import { rateToTier, rateTierToTdsColor } from '../lib/rate';
 
-// 제출률 → TDS Badge 색상 토큰 매핑.
-// >=80% green / >=50% yellow / <50% red (문서 디자인 디테일).
+// 제출률 → TDS Badge 색상 토큰. 임계 로직은 lib/rate 단일 출처.
+// 공개 export 유지 — RoundDetailPage.tsx 가 rateBadgeColor(rate) === 'green' 비교로 사용.
 export function rateBadgeColor(rate: number): 'green' | 'yellow' | 'red' {
-  if (rate >= 0.8) return 'green';
-  if (rate >= 0.5) return 'yellow';
-  return 'red';
+  return rateTierToTdsColor(rateToTier(rate));
 }
 
 interface RateBadgeProps {

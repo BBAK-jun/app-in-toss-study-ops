@@ -1,5 +1,6 @@
 // Discord webhook 발송 + 현황 메시지 페이로드 생성. ARCHITECTURE.md 4-6 코드 기반.
 import { HttpError } from '../lib/http-error';
+import { ratePercent } from '../domain/submission';
 
 export interface DiscordEmbed {
   title?: string;
@@ -48,7 +49,7 @@ export function buildStatusPayload(opts: {
   notSubmittedHandles: string[];
   dueAt: number | null;
 }): DiscordWebhookPayload {
-  const pct = Math.round(opts.rate * 100);
+  const pct = ratePercent(opts.rate);
   const due = opts.dueAt ? new Date(opts.dueAt).toLocaleString('ko-KR') : '미정';
   const mentions = opts.notSubmittedHandles
     .map((h) => (h.startsWith('@') ? h : `@${h}`))

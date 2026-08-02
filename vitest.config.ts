@@ -24,6 +24,7 @@ export default defineConfig({
       reporter: ['text', 'html'],
       include: [
         'apps/server/src/lib/**/*.ts',
+        'apps/server/src/domain/**/*.ts',
         'apps/server/src/middleware/**/*.ts',
         'apps/client/src/lib/logger/**/*.ts',
         'packages/shared/src/**/*.ts',

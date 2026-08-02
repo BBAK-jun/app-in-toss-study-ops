@@ -1,3 +1,5 @@
+import { rateToTier, rateTierToHex } from './rate';
+
 /**
  * 날짜 관련 유틸리티 함수
  */
@@ -34,24 +36,9 @@ export function getDeadlineUrgency(dueAt: string | number | null): { color: stri
 }
 
 /**
- * 제출률 기반 색상 계산
+ * 제출률(0..1) 기반 색상. 임계 로직은 lib/rate 단일 출처.
+ * 입력은 0..1 (RoundStatusDto.rate / RoundSummary.rate 와 일치).
  */
 export function getRateColor(rate: number): string {
-  if (rate >= 100) {
-    return '#34C759'; // Green
-  }
-
-  if (rate >= 75) {
-    return '#FFCC00'; // Yellow
-  }
-
-  if (rate >= 50) {
-    return '#FF9500'; // Orange
-  }
-
-  if (rate > 0) {
-    return '#FF3B30'; // Red
-  }
-
-  return '#8B95A1'; // Gray
+  return rateTierToHex(rateToTier(rate));
 }

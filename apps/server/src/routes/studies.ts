@@ -6,50 +6,17 @@ import type { AppEnv } from '../env';
 import { HttpError } from '../lib/http-error';
 import { createDb } from '../db/client';
 import { studies, rounds, participants, submissions } from '../db/schema';
+import { computeSubmissionRate } from '../domain/submission';
+import { assertStudyOwner } from '../lib/authorization';
+import { toStudyDto, toRoundDto, toParticipantDto } from './mappers';
 import type {
-  StudyDto,
   StudyCreateInput,
   StudyUpdateInput,
-  ParticipantDto,
   ParticipantCreateInput,
-  RoundDto,
   RoundCreateInput,
 } from '@studyops/shared';
 
 export const studyRoutes = new Hono<AppEnv>();
-
-// ─── mappers ───────────────────────────────────────────────────────────────
-function toStudyDto(row: typeof studies.$inferSelect): StudyDto {
-  return {
-    id: row.id,
-    ownerId: row.ownerId,
-    title: row.title,
-    description: row.description,
-    discordWebhookUrl: row.discordWebhookUrl,
-    createdAt: row.createdAt,
-  };
-}
-
-function toParticipantDto(row: typeof participants.$inferSelect): ParticipantDto {
-  return {
-    id: row.id,
-    studyId: row.studyId,
-    name: row.name,
-    discordHandle: row.discordHandle,
-    createdAt: row.createdAt,
-  };
-}
-
-function toRoundDto(row: typeof rounds.$inferSelect): RoundDto {
-  return {
-    id: row.id,
-    studyId: row.studyId,
-    roundNumber: row.roundNumber,
-    title: row.title,
-    dueAt: row.dueAt,
-    createdAt: row.createdAt,
-  };
-}
 
 // ─── 소유권 검증 헬퍼 ───────────────────────────────────────────────────────
 async function getOwnedStudy(
@@ -61,9 +28,7 @@ async function getOwnedStudy(
   if (!row) {
     throw new HttpError(404, 'NOT_FOUND', `Study ${id} not found`);
   }
-  if (row.ownerId !== userKey) {
-    throw new HttpError(403, 'FORBIDDEN', 'You do not own this study');
-  }
+  assertStudyOwner(row.ownerId, userKey);
   return row;
 }
 
@@ -251,6 +216,6 @@ studyRoutes.get('/:id/rounds/status', async (c) => {
     dueAt: r.dueAt,
     submittedCount: countByRound.get(r.id) ?? 0,
     total,
-    rate: total > 0 ? (countByRound.get(r.id) ?? 0) / total : 0,
+    rate: computeSubmissionRate(countByRound.get(r.id) ?? 0, total),
   })), 200);
 });
